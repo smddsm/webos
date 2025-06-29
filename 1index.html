@@ -1,0 +1,1267 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивная Заставка</title>
+    <style>
+        /* Базовые стили для всего документа */
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 100vh;
+            background-size: cover;
+            background-position: center;
+            transition: background-image 1.5s ease-in-out; /* Плавная смена фона */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Тень для текста */
+        }
+
+        /* Контейнер для анимации */
+        .animation-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 5;
+            overflow: hidden;
+        }
+
+        /* Базовые стили для анимированных элементов */
+        .animated-element {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        /* Стили для снежинок */
+        .snowflake {
+            width: 5px;
+            height: 5px;
+            animation: snowfall linear infinite;
+        }
+
+        @keyframes snowfall {
+            0% { transform: translateY(-10vh); opacity: 0; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 1; }
+        }
+
+        /* Стили для пузырей */
+        .bubble {
+            background-color: rgba(173, 216, 230, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            animation: bubble-up linear infinite;
+        }
+        
+        @keyframes bubble-up {
+            0% { transform: translateY(100vh) scale(0); opacity: 0.5; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+        /* Стили для звездного дождя */
+        .star {
+            background: radial-gradient(circle, white, transparent);
+            animation: shooting-star linear infinite;
+        }
+        
+        @keyframes shooting-star {
+            0% { transform: translate(100vw, -10vh) scale(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translate(-10vw, 100vh) scale(1); opacity: 0; }
+        }
+        
+        /* Стили для свечения */
+        .glow {
+            background-color: var(--current-day-shadow, rgba(76, 175, 80, 0.8));
+            filter: blur(10px);
+            animation: glow-pulse ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow-pulse {
+            0% { transform: scale(0.5); opacity: 0.5; }
+            100% { transform: scale(1.2); opacity: 0.8; }
+        }
+        
+        /* Стили для мерцающих огней */
+        .sparkle {
+            background-color: yellow;
+            animation: twinkle 2s infinite ease-in-out alternate;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Стили для конфетти */
+        .confetti {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            animation: confetti-fall linear infinite;
+        }
+        
+        @keyframes confetti-fall {
+            0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        /* Стили для падающих листьев */
+        .leaf {
+            width: 20px;
+            height: 10px;
+            background-color: brown;
+            border-radius: 50% 0;
+            animation: leaf-fall ease-in infinite;
+        }
+        
+        @keyframes leaf-fall {
+            0% { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 0; }
+            50% { transform: translateY(50vh) translateX(50px) rotate(180deg); opacity: 1; }
+            100% { transform: translateY(100vh) translateX(-50px) rotate(360deg); opacity: 0; }
+        }
+        
+        /* Стили для искр */
+        .spark {
+            background-color: orange;
+            animation: spark-fly ease-out infinite;
+        }
+        
+        @keyframes spark-fly {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(calc(var(--rand-x) * 1px), calc(var(--rand-y) * 1px)) scale(0.2); opacity: 0; }
+        }
+        
+        /* Стили для дождя */
+        .rain-drop {
+            width: 2px;
+            height: 20px;
+            background: linear-gradient(to bottom, transparent, rgba(173, 216, 230, 0.8));
+            border-radius: 50%;
+            animation: rainfall linear infinite;
+        }
+
+        @keyframes rainfall {
+            0% { transform: translateY(-10vh); opacity: 0; }
+            100% { transform: translateY(100vh); opacity: 1; }
+        }
+
+        /* Стили для плазмы (сложный эффект, используем фон) */
+        .plasma-effect {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 80%, #ff007f, transparent),
+                        radial-gradient(circle at 80% 20%, #00ffff, transparent),
+                        radial-gradient(circle at 50% 50%, #ffff00, transparent);
+            background-size: 200% 200%;
+            animation: plasma-move 15s infinite alternate ease-in-out;
+            filter: blur(50px);
+            opacity: 0.4;
+        }
+
+        @keyframes plasma-move {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 100%; }
+        }
+
+        /* Стили для северного сияния (сложный эффект, используем фон) */
+        .aurora-effect {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg,
+                rgba(0, 255, 255, 0.2),
+                rgba(0, 255, 0, 0.2),
+                transparent,
+                rgba(0, 255, 0, 0.2),
+                rgba(0, 255, 255, 0.2)
+            );
+            background-size: 200% 100%;
+            animation: aurora-move 20s infinite linear;
+            filter: blur(40px);
+            opacity: 0.6;
+        }
+
+        @keyframes aurora-move {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 0%; }
+        }
+
+        /* Стили для тумана */
+        .fog-effect {
+            width: 300%;
+            height: 300%;
+            position: absolute;
+            left: -100%;
+            top: -100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent 70%);
+            animation: fog-move 50s infinite linear;
+            filter: blur(80px);
+        }
+        
+        @keyframes fog-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(33.3%, 33.3%); }
+        }
+
+
+        /* Верхняя и нижняя панели с информацией */
+        .top-bar, .bottom-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.3); /* Полупрозрачный фон */
+            backdrop-filter: blur(5px); /* Эффект "замороженного стекла" */
+            z-index: 10; /* Убедимся, что панели поверх фона */
+        }
+
+        .top-bar {
+            justify-content: flex-end; /* Часы и погода справа */
+            align-items: flex-start;
+        }
+
+        .bottom-bar {
+            justify-content: center; /* Календарь по центру */
+            align-items: flex-end;
+            gap: 20px; /* Отступ между элементами */
+        }
+
+        /* Стили для элементов: часы, погода, календарь */
+        .clock, .weather, .calendar, .radio-player, .air-raid-map {
+            padding: 15px 25px;
+            border-radius: 15px;
+            /* Используем CSS-переменные для тем */
+            background: var(--panel-background, rgba(0, 0, 0, 0.4));
+            backdrop-filter: blur(8px);
+            margin: 10px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: background 0.5s ease; /* Плавный переход для цвета темы */
+        }
+
+        .clock {
+            font-size: 5em;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-left: auto; /* Отталкиваем вправо */
+            color: var(--text-color, white);
+            cursor: pointer; /* Делаем часы кликабельными */
+        }
+
+        .date {
+            font-size: 1.5em;
+            margin-top: 5px;
+            color: var(--text-color, white);
+        }
+
+        .weather {
+            font-size: 1.8em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px; /* Отступ от часов */
+            color: var(--text-color, white);
+        }
+
+        .weather-icon {
+            width: 80px; /* Увеличил размер иконки */
+            height: 80px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-bottom: 5px;
+        }
+
+        .calendar {
+            font-size: 1.2em;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            max-width: 450px; /* Ограничиваем ширину календаря */
+            user-select: none; /* Запрещаем выделение текста для сенсорных экранов */
+            color: var(--text-color, white);
+        }
+
+        .calendar div {
+            padding: 8px;
+            border-radius: 5px;
+            background: var(--calendar-cell-background, rgba(255, 255, 255, 0.1));
+        }
+
+        .calendar .day-name {
+            font-weight: bold;
+            background: var(--calendar-header-background, rgba(255, 255, 255, 0.2));
+        }
+
+        .calendar .current-day {
+            background: var(--current-day-background, #4CAF50); /* Зеленый для текущего дня */
+            font-weight: bold;
+            box-shadow: 0 0 10px var(--current-day-shadow, rgba(76, 175, 80, 0.8)); /* Свечение для текущего дня */
+        }
+
+        /* Стили для нового элемента: Карта тревог */
+        .air-raid-map {
+            width: 400px;
+            height: 250px;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
+            position: relative; /* Для позиционирования ссылки-заглушки */
+        }
+
+        .air-raid-map iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .air-raid-map .overlay-link {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Поверх iframe, чтобы клик по нему работал */
+            cursor: pointer;
+        }
+
+        /* Стили для радио-плеера */
+        .radio-player {
+            min-width: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .radio-player h3 {
+            margin: 0 0 15px 0;
+        }
+        
+        .radio-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .radio-controls button {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            transition: background-color 0.3s ease;
+        }
+        
+        .radio-controls button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .radio-select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #555;
+            background-color: #333;
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+
+        /* Эффекты */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 1.5s ease-out; /* Увеличил время для плавности */
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .clock, .weather, .calendar, .radio-player, .air-raid-map {
+            animation: pulse 4s infinite ease-in-out; /* Легкое пульсирование для элементов */
+        }
+
+        /* Плавающие кнопки */
+        .floating-buttons-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        .floating-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            color: white;
+            font-size: 2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .floating-button:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+            transform: scale(1.05);
+        }
+
+        .change-image-button-main {
+            font-size: 1.5em;
+            padding-top: 5px;
+        }
+        
+        .fullscreen-button {
+            font-size: 1.5em;
+            padding-top: 5px;
+        }
+
+
+        /* Модальное окно настроек */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 101;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: rgba(30, 30, 30, 0.9);
+            margin: auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease-out;
+            color: white;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 3em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-content h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--text-color, white);
+        }
+
+        .setting-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .setting-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .setting-button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            background-color: #007bff;
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .setting-button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .theme-swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: border-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+        }
+
+        .theme-swatch:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-swatch.selected {
+            border-color: #007bff;
+            transform: scale(1.15);
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.8);
+        }
+        
+        select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #555;
+            background-color: #333;
+            color: white;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        /* Стили для кастомного уведомления */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 110;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .notification {
+            background-color: rgba(255, 0, 0, 0.8);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            font-weight: bold;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s, transform 0.3s;
+            animation: slideInDown 0.5s forwards;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes slideInDown {
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeOutUp {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(-100px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="weather">
+            <div class="weather-icon" id="weather-icon"></div>
+            <div id="weather-temp">Загрузка...</div>
+            <div id="weather-desc"></div>
+        </div>
+        <div class="clock" id="clockElement">
+            <div id="time"></div>
+            <div class="date" id="date"></div>
+        </div>
+    </div>
+
+    <div class="bottom-bar">
+        <div class="calendar" id="calendar">
+            </div>
+        <div class="air-raid-map">
+             <iframe src="https://war.ukrzen.in.ua/alerts/" title="Карта повітряних тривог України" width="100%" height="100%"></iframe>
+             <a href="https://war.ukrzen.in.ua/alerts/" target="_blank" class="overlay-link" title="Открыть карту в новом окне"></a>
+        </div>
+        <div class="radio-player" id="radio-player">
+            <h3>📻 Онлайн Радио</h3>
+            <select id="radio-select" class="radio-select">
+                </select>
+            <div class="radio-controls">
+                <button id="radio-play-btn">▶️</button>
+                <button id="radio-pause-btn">⏸️</button>
+                <button id="radio-stop-btn">⏹️</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="animation-container" id="animation-container"></div>
+    
+    <div class="notification-container" id="notification-container"></div>
+
+    <div class="floating-buttons-container">
+        <div class="floating-button" id="settingsButton" title="Настройки">⚙️</div>
+        <div class="floating-button change-image-button-main" id="changeImageButtonMain" title="Сменить фон">🖼️</div>
+        <div class="floating-button" id="nextThemeButton" title="Следующая тема">🎨</div>
+        <div class="floating-button fullscreen-button" id="fullscreenButton" title="Полноэкранный режим">🖥️</div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeModalButton">&times;</span>
+            <h2>Настройки Заставки</h2>
+
+            <div class="setting-group">
+                <label>Полноэкранный режим:</label>
+                <div class="button-group">
+                    <button class="setting-button" id="fullscreenToggle">Включить / Выключить полный экран</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>Выбор цветовой темы:</label>
+                <div class="button-group" id="themeSelectors">
+                    </div>
+            </div>
+            
+            <div class="setting-group">
+                <label for="animation-select">Выберите фоновую анимацию:</label>
+                <select id="animation-select">
+                    <option value="none">Нет</option>
+                    <option value="snowflakes">Снежинки</option>
+                    <option value="bubbles">Пузыри</option>
+                    <option value="shooting-stars">Звездный дождь</option>
+                    <option value="glow">Плавное свечение</option>
+                    <option value="sparkles">Мерцающие огни</option>
+                    <option value="confetti">Конфетти</option>
+                    <option value="leaves">Падающие листья</option>
+                    <option value="sparks">Искры</option>
+                    <option value="rain">Дождь</option>
+                    <option value="plasma">Плазма</option>
+                    <option value="aurora">Северное сияние</option>
+                    <option value="fog">Туман</option>
+                </select>
+            </div>
+
+            </div>
+    </div>
+
+    <script>
+        // --- Настройки ---
+        const CITY_NAME = 'Uzhhorod';
+        const IMAGE_CHANGE_INTERVAL_MS = 5 * 60 * 1000;
+        const WEATHER_UPDATE_INTERVAL_MS = 10 * 60 * 1000;
+        
+        let animationInterval;
+        let currentAnimation = 'none';
+        
+        // Аудио-плеер для радио
+        const audioPlayer = new Audio();
+        let isPlaying = false;
+
+        // Список радиостанций (имя: URL)
+        const radioStations = {
+            'Выберите станцию': '',
+            '— УКРАИНА —': '',
+            'Kiss FM': 'https://online.kissfm.ua/KissFM',
+            'Lux FM': 'https://online.lux.fm/LuxFM',
+            'Radio ROKS': 'https://online.radioroks.ua/RadioROKS',
+            'Nashe Radio': 'https://online.nasheradio.ua/NasheRadio',
+            'NRJ Ukraine': 'https://online.nrj.ua/NRJ_Ukraine',
+            'Hit FM': 'http://online.hitfm.ua/HitFM',
+            'Radio Bayraktar': 'http://online.radiobayraktar.ua/RadioBayraktar',
+            'Prosto RadiO': 'http://radio.prosto.rocks/radio',
+            'DJ FM': 'http://radio.djfm.ua/djfm',
+            'M-FM': 'http://mfm.ua/online',
+            'Radio Relax': 'http://online.radiorelax.ua/RadioRelax',
+            'Europa Plus Ukraine': 'http://online.europaplus.ua/EuropaPlus'
+        };
+
+        // Определяем цветовые темы
+        const themes = {
+            'default': {
+                '--panel-background': 'rgba(0, 0, 0, 0.4)',
+                '--text-color': 'white',
+                '--calendar-cell-background': 'rgba(255, 255, 255, 0.1)',
+                '--calendar-header-background': 'rgba(255, 255, 255, 0.2)',
+                '--current-day-background': '#4CAF50',
+                '--current-day-shadow': 'rgba(76, 175, 80, 0.8)'
+            },
+            'blue-ocean': {
+                '--panel-background': 'rgba(0, 50, 100, 0.5)',
+                '--text-color': '#E0F2F7',
+                '--calendar-cell-background': 'rgba(0, 150, 255, 0.15)',
+                '--calendar-header-background': 'rgba(0, 150, 255, 0.25)',
+                '--current-day-background': '#00BFFF',
+                '--current-day-shadow': 'rgba(0, 191, 255, 0.8)'
+            },
+            'purple-haze': {
+                '--panel-background': 'rgba(60, 0, 60, 0.5)',
+                '--text-color': '#F3E5F5',
+                '--calendar-cell-background': 'rgba(150, 0, 150, 0.15)',
+                '--calendar-header-background': 'rgba(150, 0, 150, 0.25)',
+                '--current-day-background': '#9C27B0',
+                '--current-day-shadow': 'rgba(156, 39, 176, 0.8)'
+            },
+            'forest-green': {
+                '--panel-background': 'rgba(20, 60, 20, 0.5)',
+                '--text-color': '#F1F8E9',
+                '--calendar-cell-background': 'rgba(0, 100, 0, 0.15)',
+                '--calendar-header-background': 'rgba(0, 100, 0, 0.25)',
+                '--current-day-background': '#689F38',
+                '--current-day-shadow': 'rgba(104, 159, 56, 0.8)'
+            },
+            'solarized-dark': {
+                '--panel-background': 'rgba(7, 54, 66, 0.6)',
+                '--text-color': '#FDF6E3',
+                '--calendar-cell-background': 'rgba(101, 123, 131, 0.2)',
+                '--calendar-header-background': 'rgba(101, 123, 131, 0.3)',
+                '--current-day-background': '#2AA198',
+                '--current-day-shadow': 'rgba(42, 161, 152, 0.8)'
+            },
+            'monokai-pro': {
+                '--panel-background': 'rgba(39, 40, 34, 0.7)',
+                '--text-color': '#F8F8F2',
+                '--calendar-cell-background': 'rgba(117, 117, 108, 0.15)',
+                '--calendar-header-background': 'rgba(117, 117, 108, 0.25)',
+                '--current-day-background': '#FD971F',
+                '--current-day-shadow': 'rgba(253, 151, 31, 0.8)'
+            },
+            'gruvbox-light': {
+                '--panel-background': 'rgba(251, 241, 199, 0.6)',
+                '--text-color': '#3C3836',
+                '--calendar-cell-background': 'rgba(168, 153, 132, 0.2)',
+                '--calendar-header-background': 'rgba(168, 153, 132, 0.3)',
+                '--current-day-background': '#B57614',
+                '--current-day-shadow': 'rgba(181, 118, 20, 0.8)'
+            },
+            'nord': {
+                '--panel-background': 'rgba(59, 66, 82, 0.6)',
+                '--text-color': '#ECEFF4',
+                '--calendar-cell-background': 'rgba(129, 161, 193, 0.2)',
+                '--calendar-header-background': 'rgba(129, 161, 193, 0.3)',
+                '--current-day-background': '#88C0D0',
+                '--current-day-shadow': 'rgba(136, 192, 208, 0.8)'
+            },
+            'dracula': {
+                '--panel-background': 'rgba(40, 42, 54, 0.7)',
+                '--text-color': '#F8F8F2',
+                '--calendar-cell-background': 'rgba(98, 114, 164, 0.2)',
+                '--calendar-header-background': 'rgba(98, 114, 164, 0.3)',
+                '--current-day-background': '#BD93F9',
+                '--current-day-shadow': 'rgba(189, 147, 249, 0.8)'
+            },
+            'cyberpunk': {
+                '--panel-background': 'rgba(10, 0, 20, 0.7)',
+                '--text-color': '#00FFFF',
+                '--calendar-cell-background': 'rgba(255, 20, 147, 0.15)',
+                '--calendar-header-background': 'rgba(255, 20, 147, 0.25)',
+                '--current-day-background': '#FFD700',
+                '--current-day-shadow': 'rgba(255, 215, 0, 0.8)'
+            },
+            'pastel-pink': {
+                '--panel-background': 'rgba(255, 200, 221, 0.6)',
+                '--text-color': '#4A235A',
+                '--calendar-cell-background': 'rgba(255, 179, 186, 0.3)',
+                '--calendar-header-background': 'rgba(255, 179, 186, 0.4)',
+                '--current-day-background': '#E69A8D',
+                '--current-day-shadow': 'rgba(230, 154, 141, 0.8)'
+            },
+            'dark-minimal': {
+                '--panel-background': 'rgba(20, 20, 20, 0.8)',
+                '--text-color': '#DCDCDC',
+                '--calendar-cell-background': 'rgba(60, 60, 60, 0.2)',
+                '--calendar-header-background': 'rgba(80, 80, 80, 0.3)',
+                '--current-day-background': '#A9A9A9',
+                '--current-day-shadow': 'rgba(169, 169, 169, 0.8)'
+            },
+            'matrix-green': {
+                '--panel-background': 'rgba(0, 50, 0, 0.8)',
+                '--text-color': '#00FF41',
+                '--calendar-cell-background': 'rgba(0, 255, 65, 0.1)',
+                '--calendar-header-background': 'rgba(0, 255, 65, 0.2)',
+                '--current-day-background': '#32CD32',
+                '--current-day-shadow': 'rgba(50, 205, 50, 0.8)'
+            },
+            'warm-sepia': {
+                '--panel-background': 'rgba(92, 64, 51, 0.7)',
+                '--text-color': '#F5F5DC',
+                '--calendar-cell-background': 'rgba(205, 133, 63, 0.2)',
+                '--calendar-header-background': 'rgba(205, 133, 63, 0.3)',
+                '--current-day-background': '#D2B48C',
+                '--current-day-shadow': 'rgba(210, 180, 140, 0.8)'
+            }
+        };
+        
+        let themeNames = Object.keys(themes);
+        let currentThemeIndex = 0;
+        let currentTheme = themeNames[currentThemeIndex];
+
+        // --- DOM элементы ---
+        const clockElement = document.getElementById('clockElement');
+        const settingsButton = document.getElementById('settingsButton');
+        const changeImageButtonMain = document.getElementById('changeImageButtonMain');
+        const nextThemeButton = document.getElementById('nextThemeButton');
+        const fullscreenButton = document.getElementById('fullscreenButton');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeModalButton = document.getElementById('closeModalButton');
+        const fullscreenToggle = document.getElementById('fullscreenToggle');
+        const themeSelectors = document.getElementById('themeSelectors');
+        const animationSelect = document.getElementById('animation-select');
+        const animationContainer = document.getElementById('animation-container');
+        const radioSelect = document.getElementById('radio-select');
+        const radioPlayBtn = document.getElementById('radio-play-btn');
+        const radioPauseBtn = document.getElementById('radio-pause-btn');
+        const radioStopBtn = document.getElementById('radio-stop-btn');
+        const notificationContainer = document.getElementById('notification-container');
+
+        // --- Функции для Заставки ---
+        
+        /**
+         * Показывает кастомное уведомление.
+         * @param {string} message - Сообщение для отображения.
+         * @param {number} [duration=3000] - Длительность отображения в мс.
+         */
+        function showNotification(message, duration = 5000) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            
+            notificationContainer.appendChild(notification);
+            
+            // Применяем класс для анимации появления
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+
+            // Удаляем уведомление через duration
+            setTimeout(() => {
+                notification.style.animation = 'fadeOutUp 0.5s forwards';
+                setTimeout(() => {
+                    notification.remove();
+                }, 500); // Дожидаемся окончания анимации исчезновения
+            }, duration);
+        }
+
+
+        /**
+         * Применяет выбранную цветовую тему к элементам интерфейса.
+         * @param {string} themeName - Имя темы из объекта `themes`.
+         */
+        function applyTheme(themeName) {
+            const theme = themes[themeName];
+            if (!theme) {
+                console.warn(`Тема "${themeName}" не найдена.`);
+                return;
+            }
+            for (const [prop, value] of Object.entries(theme)) {
+                document.documentElement.style.setProperty(prop, value);
+            }
+            currentTheme = themeName;
+            currentThemeIndex = themeNames.indexOf(themeName);
+            updateThemeSelectors();
+        }
+        
+        /**
+         * Переключает на следующую тему в списке.
+         */
+        function nextTheme() {
+            currentThemeIndex = (currentThemeIndex + 1) % themeNames.length;
+            applyTheme(themeNames[currentThemeIndex]);
+        }
+
+        /**
+         * Обновляет отображение текущего времени и даты.
+         */
+        function updateClock() {
+            const now = new Date();
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+            document.getElementById('time').textContent = now.toLocaleTimeString('ru-RU', timeOptions);
+            document.getElementById('date').textContent = now.toLocaleDateString('ru-RU', dateOptions);
+        }
+        
+        /**
+         * Загружает случайное фоновое изображение из Picsum Photos.
+         */
+        async function loadRandomImage() {
+            const imageUrl = `https://picsum.photos/1920/1080?random=${new Date().getTime()}`;
+            
+            console.log('Попытка загрузки изображения с Picsum Photos:', imageUrl);
+
+            const img = new Image();
+            img.src = imageUrl;
+            img.onload = () => {
+                document.body.style.backgroundImage = `url('${imageUrl}')`;
+                document.body.classList.add('fade-in');
+                setTimeout(() => document.body.classList.remove('fade-in'), 1500); 
+                console.log('Изображение успешно загружено и установлено.');
+            };
+            img.onerror = () => {
+                console.error('Не удалось загрузить фоновое изображение с Picsum Photos. Проверьте интернет-соединение или доступность сервиса:', imageUrl);
+                showNotification('Не удалось загрузить фоновое изображение. Проверьте подключение к интернету.', 5000);
+                document.body.style.backgroundImage = 'url("https://via.placeholder.com/1920x1080/000000/FFFFFF?text=Ошибка+загрузки+фото")'; 
+            };
+        }
+
+        /**
+         * Загружает данные о погоде для указанного города (Ужгород) из общедоступных источников.
+         */
+        async function loadWeather() {
+            const weatherTempElem = document.getElementById('weather-temp');
+            const weatherDescElem = document.getElementById('weather-desc');
+            const weatherIconElem = document.getElementById('weather-icon');
+
+            weatherTempElem.textContent = 'Загрузка...';
+            weatherDescElem.textContent = '';
+            weatherIconElem.style.backgroundImage = '';
+
+            weatherTempElem.textContent = 'Ужгород: +25°C';
+            weatherDescElem.textContent = 'Ясно';
+            weatherIconElem.style.backgroundImage = 'url("http://openweathermap.org/img/wn/01d@4x.png")';
+        }
+
+        /**
+         * Генерирует и отображает календарь для текущего месяца.
+         */
+        function generateCalendar() {
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay(); 
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            const calendarElement = document.getElementById('calendar');
+            calendarElement.innerHTML = '';
+
+            const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+            dayNames.forEach(day => {
+                const div = document.createElement('div');
+                div.classList.add('day-name');
+                div.textContent = day;
+                calendarElement.appendChild(div);
+            });
+
+            const startOffset = (firstDayOfMonth === 0) ? 6 : firstDayOfMonth - 1; 
+
+            for (let i = 0; i < startOffset; i++) {
+                calendarElement.appendChild(document.createElement('div'));
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const div = document.createElement('div');
+                div.textContent = day;
+                if (day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) {
+                    div.classList.add('current-day');
+                }
+                calendarElement.appendChild(div);
+            }
+        }
+
+        // --- Функции для модального окна и настроек ---
+
+        /** Открывает модальное окно настроек. */
+        function openSettingsModal() {
+            settingsModal.style.display = 'flex';
+        }
+
+        /** Закрывает модальное окно настроек. */
+        function closeSettingsModal() {
+            settingsModal.style.display = 'none';
+        }
+
+        /** Переключает полноэкранный режим. */
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`Ошибка при попытке включить полноэкранный режим: ${err.message} (${err.name})`);
+                    showNotification(`Ошибка полноэкранного режима: ${err.message}`, 5000);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        /** Создает и добавляет элементы выбора цветовых тем в модальное окно. */
+        function populateThemeSelectors() {
+            themeSelectors.innerHTML = '';
+            for (const themeName in themes) {
+                const swatch = document.createElement('div');
+                swatch.classList.add('theme-swatch');
+                swatch.style.backgroundColor = themes[themeName]['--panel-background'].replace(/rgba\((.*?), 0\.\d+\)/, 'rgb($1)'); 
+                swatch.title = themeName.replace('-', ' ').toUpperCase();
+                swatch.dataset.theme = themeName;
+                
+                swatch.addEventListener('click', () => applyTheme(themeName));
+                themeSelectors.appendChild(swatch);
+            }
+            updateThemeSelectors();
+        }
+
+        /** Выделяет текущую активную тему в селекторах. */
+        function updateThemeSelectors() {
+            document.querySelectorAll('.theme-swatch').forEach(swatch => {
+                if (swatch.dataset.theme === currentTheme) {
+                    swatch.classList.add('selected');
+                } else {
+                    swatch.classList.remove('selected');
+                }
+            });
+        }
+        
+        // --- Функции анимации ---
+
+        /**
+         * Запускает выбранную анимацию.
+         * @param {string} effectName - Название эффекта.
+         */
+        function startAnimation(effectName) {
+            stopAnimation();
+            currentAnimation = effectName;
+
+            animationContainer.classList.remove('plasma-effect', 'aurora-effect', 'fog-effect');
+            animationContainer.innerHTML = '';
+
+            if (effectName === 'none') {
+                return;
+            }
+            
+            if (effectName === 'plasma') {
+                animationContainer.classList.add('plasma-effect');
+                return;
+            }
+            if (effectName === 'aurora') {
+                animationContainer.classList.add('aurora-effect');
+                return;
+            }
+            if (effectName === 'fog') {
+                animationContainer.classList.add('fog-effect');
+                return;
+            }
+
+            let intervalTime = 100;
+            if (effectName === 'shooting-stars') {
+                intervalTime = 5000;
+            } else if (effectName === 'sparks') {
+                intervalTime = 50;
+            }
+
+            animationInterval = setInterval(() => {
+                const element = document.createElement('div');
+                element.classList.add('animated-element', effectName.slice(0, -1));
+                
+                const size = Math.random() * 10 + 5;
+                element.style.width = `${size}px`;
+                element.style.height = `${size}px`;
+                element.style.left = `${Math.random() * 100}vw`;
+                
+                if (effectName === 'confetti') {
+                    const colors = ['#FFC0CB', '#FF69B4', '#EE82EE', '#9370DB', '#00FFFF'];
+                    element.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    element.style.borderRadius = '2px';
+                }
+                
+                if (effectName === 'sparks') {
+                    element.style.setProperty('--rand-x', (Math.random() - 0.5) * 500);
+                    element.style.setProperty('--rand-y', (Math.random() - 0.5) * 500);
+                    element.style.backgroundColor = `hsl(${Math.random() * 60}, 100%, 50%)`;
+                    element.style.width = '2px';
+                    element.style.height = '2px';
+                }
+
+                if (effectName === 'leaves') {
+                    const leafColors = ['#8B4513', '#A0522D', '#D2691E'];
+                    element.style.backgroundColor = leafColors[Math.floor(Math.random() * leafColors.length)];
+                    element.style.width = `${Math.random() * 20 + 10}px`;
+                    element.style.height = `${Math.random() * 10 + 5}px`;
+                    element.style.borderRadius = '50% 0';
+                }
+
+                if (effectName === 'rain') {
+                    element.classList.remove('animated-element');
+                    element.classList.add('rain-drop');
+                    element.style.left = `${Math.random() * 100}vw`;
+                    element.style.animationDuration = `${Math.random() * 1.5 + 0.5}s`;
+                    element.style.animationDelay = `${Math.random() * 5}s`;
+                }
+
+                animationContainer.appendChild(element);
+
+                element.addEventListener('animationend', () => {
+                    element.remove();
+                });
+            }, intervalTime);
+        }
+
+        /**
+         * Останавливает текущую анимацию и удаляет все элементы.
+         */
+        function stopAnimation() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+            }
+            animationContainer.innerHTML = '';
+            animationContainer.classList.remove('plasma-effect', 'aurora-effect', 'fog-effect');
+        }
+        
+        /**
+         * Заполняет выпадающий список радиостанций.
+         */
+        function populateRadioStations() {
+            radioSelect.innerHTML = '';
+            for (const stationName in radioStations) {
+                const option = document.createElement('option');
+                option.value = radioStations[stationName];
+                option.textContent = stationName;
+                if (!radioStations[stationName]) {
+                    option.disabled = true; // Делаем заголовки некликабельными
+                }
+                radioSelect.appendChild(option);
+            }
+        }
+        
+        /**
+         * Воспроизводит выбранную радиостанцию.
+         */
+        function playRadio() {
+            const selectedUrl = radioSelect.value;
+            if (selectedUrl) {
+                if (audioPlayer.src !== selectedUrl) {
+                    audioPlayer.src = selectedUrl;
+                }
+                audioPlayer.play().then(() => {
+                    isPlaying = true;
+                    console.log('Радио играет:', radioSelect.options[radioSelect.selectedIndex].text);
+                }).catch(error => {
+                    console.error('Ошибка воспроизведения:', error);
+                    showNotification('Не удалось воспроизвести радио. Возможно, браузер блокирует автовоспроизведение или ссылка устарела.', 7000);
+                });
+            } else {
+                audioPlayer.pause();
+                isPlaying = false;
+            }
+        }
+        
+        /**
+         * Ставит радио на паузу.
+         */
+        function pauseRadio() {
+            audioPlayer.pause();
+            isPlaying = false;
+            console.log('Радио на паузе');
+        }
+        
+        /**
+         * Останавливает воспроизведение радио.
+         */
+        function stopRadio() {
+            audioPlayer.pause();
+            audioPlayer.currentTime = 0;
+            isPlaying = false;
+            console.log('Радио остановлено');
+        }
+
+
+        // --- Инициализация и обработчики событий ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Первичная загрузка и установка
+            updateClock();
+            generateCalendar();
+            loadRandomImage();
+            loadWeather();
+            applyTheme(currentTheme);
+            startAnimation(currentAnimation);
+
+            populateRadioStations();
+
+            // Интервалы для обновления данных
+            setInterval(updateClock, 1000);
+            setInterval(loadRandomImage, IMAGE_CHANGE_INTERVAL_MS);
+            setInterval(loadWeather, WEATHER_UPDATE_INTERVAL_MS);
+            
+            // Обработчики событий для модального окна и кнопок
+            settingsButton.addEventListener('click', openSettingsModal);
+            closeModalButton.addEventListener('click', closeSettingsModal);
+            settingsModal.addEventListener('click', (event) => {
+                if (event.target === settingsModal) {
+                    closeSettingsModal();
+                }
+            });
+
+            fullscreenToggle.addEventListener('click', toggleFullscreen);
+            changeImageButtonMain.addEventListener('click', loadRandomImage);
+            fullscreenButton.addEventListener('click', toggleFullscreen); // Новая кнопка на главном экране
+            
+            // Обработчики для смены тем и обновления
+            clockElement.addEventListener('click', nextTheme);
+            nextThemeButton.addEventListener('click', nextTheme);
+            
+            // Обработчик для выбора анимации
+            animationSelect.addEventListener('change', (event) => {
+                const selectedEffect = event.target.value;
+                startAnimation(selectedEffect);
+            });
+            
+            // Обработчики для радио
+            radioSelect.addEventListener('change', playRadio);
+            radioPlayBtn.addEventListener('click', playRadio);
+            radioPauseBtn.addEventListener('click', pauseRadio);
+            radioStopBtn.addEventListener('click', stopRadio);
+        });
+    </script>
+</body>
+</html>
