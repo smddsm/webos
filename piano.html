@@ -1,0 +1,1862 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Моё Забавное Пианино</title>
+    <style>
+        /* Базовые стили для тела и контейнера пианино */
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+            overflow: hidden;
+            transition: background 0.8s ease-in-out; /* Плавный переход для градиента */
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        #piano-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            margin-bottom: 20px;
+            position: relative;
+            transition: background-color 0.5s ease;
+            z-index: 60; /* Поднимаем пианино выше дорожного эффекта */
+        }
+
+        /* Новый стиль для эффекта пульсации контейнера пианино */
+        #piano-container.piano-pulse {
+            animation: pianoPulse 0.2s ease-out forwards;
+        }
+
+        @keyframes pianoPulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            }
+            50% {
+                transform: scale(1.005); /* Немного увеличиваем */
+                box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4); /* Усиливаем тень */
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            }
+        }
+
+        .key {
+            width: 80px;
+            height: 200px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 15px;
+            box-sizing: border-box;
+            font-size: 1.2em;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            transition: transform 0.05s ease, box-shadow 0.05s ease, background-color 0.5s ease;
+            user-select: none;
+            flex-shrink: 0;
+            position: relative;
+            touch-action: manipulation;
+        }
+
+        .key:active, .key.pressed {
+            transform: translateY(3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Дополнительный стиль для эффекта свечения клавиш */
+        .key.key-glow {
+            animation: keyGlow 0.3s ease-out forwards;
+        }
+
+        @keyframes keyGlow {
+            0% {
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 15px 5px var(--key-glow-color, rgba(255, 255, 255, 0.7)); /* Использование CSS-переменной */
+            }
+            100% {
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        /* Цвета клавиш по умолчанию (для theme-0) */
+        .theme-0 .key.color-1 { background-color: #FF6347; }
+        .theme-0 .key.color-2 { background-color: #FFD700; }
+        .theme-0 .key.color-3 { background-color: #32CD32; }
+        .theme-0 .key.color-4 { background-color: #6495ED; }
+        .theme-0 .key.color-5 { background-color: #BA55D3; }
+        .theme-0 .key.color-6 { background-color: #FF4500; }
+        .theme-0 .key.color-7 { background-color: #ADFF2F; }
+        .theme-0 .key.color-8 { background-color: #4169E1; }
+        .theme-0 .key.color-9 { background-color: #FFC0CB; }
+        .theme-0 .key.color-10 { background-color: #8A2BE2; }
+        .theme-0 .key.color-11 { background-color: #7FFF00; }
+        .theme-0 .key.color-12 { background-color: #DDA0DD; }
+
+        /* Стили для кнопки "Случайный звук" */
+        #random-sound-button {
+            padding: 15px 30px;
+            font-size: 1.5em;
+            font-weight: bold;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            touch-action: manipulation;
+        }
+
+        #random-sound-button:hover {
+            background-color: #45a049;
+        }
+
+        #random-sound-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ----- Стили для кнопки переключения тем ----- */
+        #theme-toggle-button {
+            position: fixed;
+            bottom: 20px; /* Самая нижняя кнопка */
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #6A5ACD;
+            color: white;
+            font-size: 2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            z-index: 100;
+            touch-action: manipulation;
+        }
+
+        #theme-toggle-button:hover {
+            background-color: #5b4da6;
+        }
+
+        #theme-toggle-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        /* ----- Стили для кнопки демо-режима ----- */
+        #demo-mode-button {
+            position: fixed;
+            bottom: 90px; /* Над кнопкой темы (20px + 60px высота кнопки = 80px, +10px отступ) */
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #20B2AA;
+            color: white;
+            font-size: 2em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            z-index: 100;
+            touch-action: manipulation;
+        }
+
+        #demo-mode-button:hover {
+            background-color: #1a928c;
+        }
+
+        #demo-mode-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        #demo-mode-button.active-demo {
+            background-color: #DC143C;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); }
+            100% { transform: scale(1.05); box-shadow: 0 0 15px 5px rgba(220, 20, 60, 0.5); }
+        }
+
+        /* ----- ТЕМЫ (с новыми) ----- */
+        /* Тема 0: Дефолтная - Яркая Радуга */
+        .theme-0 #piano-container { background-color: #333; }
+        .theme-0 .key.color-1 { background-color: #FF6347; }
+        .theme-0 .key.color-2 { background-color: #FFD700; }
+        .theme-0 .key.color-3 { background-color: #32CD32; }
+        .theme-0 .key.color-4 { background-color: #6495ED; }
+        .theme-0 .key.color-5 { background-color: #BA55D3; }
+        .theme-0 .key.color-6 { background-color: #FF4500; }
+        .theme-0 .key.color-7 { background-color: #ADFF2F; }
+        .theme-0 .key.color-8 { background-color: #4169E1; }
+        .theme-0 .key.color-9 { background-color: #FFC0CB; }
+        .theme-0 .key.color-10 { background-color: #8A2BE2; }
+        .theme-0 .key.color-11 { background-color: #7FFF00; }
+        .theme-0 .key.color-12 { background-color: #DDA0DD; }
+
+        /* Тема 1: Морская Глубина - Сине-зеленые оттенки */
+        .theme-1 #piano-container { background-color: #0074D9; }
+        .theme-1 .key.color-1 { background-color: #4DB6AC; }
+        .theme-1 .key.color-2 { background-color: #26A69A; }
+        .theme-1 .key.color-3 { background-color: #00897B; }
+        .theme-1 .key.color-4 { background-color: #00695C; }
+        .theme-1 .key.color-5 { background-color: #0D47A1; }
+        .theme-1 .key.color-6 { background-color: #1976D2; }
+        .theme-1 .key.color-7 { background-color: #2196F3; }
+        .theme-1 .key.color-8 { background-color: #42A5F5; }
+        .theme-1 .key.color-9 { background-color: #64B5F6; }
+        .theme-1 .key.color-10 { background-color: #90CAF9; }
+        .theme-1 .key.color-11 { background-color: #BBDEFB; }
+        .theme-1 .key.color-12 { background-color: #E3F2FD; }
+
+        /* Тема 2: Закат - Теплые оранжево-красные оттенки */
+        .theme-2 #piano-container { background-color: #FF4136; }
+        .theme-2 .key.color-1 { background-color: #FFCDD2; }
+        .theme-2 .key.color-2 { background-color: #EF9A9A; }
+        .theme-2 .key.color-3 { background-color: #E57373; }
+        .theme-2 .key.color-4 { background-color: #EF5350; }
+        .theme-2 .key.color-5 { background-color: #F44336; }
+        .theme-2 .key.color-6 { background-color: #FFAB91; }
+        .theme-2 .key.color-7 { background-color: #FFCC80; }
+        .theme-2 .key.color-8 { background-color: #FFB74D; }
+        .theme-2 .key.color-9 { background-color: #FFA726; }
+        .theme-2 .key.color-10 { background-color: #FB8C00; }
+        .theme-2 .key.color-11 { background-color: #E65100; }
+        .theme-2 .key.color-12 { background-color: #FFD180; }
+
+        /* Тема 3: Лесная Поляна - Оттенки зеленого и коричневого */
+        .theme-3 #piano-container { background-color: #8D6E63; }
+        .theme-3 .key.color-1 { background-color: #C8E6C9; }
+        .theme-3 .key.color-2 { background-color: #A5D6A7; }
+        .theme-3 .key.color-3 { background-color: #81C784; }
+        .theme-3 .key.color-4 { background-color: #66BB6A; }
+        .theme-3 .key.color-5 { background-color: #4CAF50; }
+        .theme-3 .key.color-6 { background-color: #AED581; }
+        .theme-3 .key.color-7 { background-color: #DCE775; }
+        .theme-3 .key.color-8 { background-color: #BCAAA4; }
+        .theme-3 .key.color-9 { background-color: #A1887F; }
+        .theme-3 .key.color-10 { background-color: #8D6E63; }
+        .theme-3 .key.color-11 { background-color: #6D4C41; }
+        .theme-3 .key.color-12 { background-color: #4E342E; }
+
+        /* Тема 4: Звездная Ночь - Оттенки синего и фиолетового */
+        .theme-4 #piano-container { background-color: #444; }
+        .theme-4 .key.color-1 { background-color: #B39DDB; }
+        .theme-4 .key.color-2 { background-color: #9575CD; }
+        .theme-4 .key.color-3 { background-color: #7E57C2; }
+        .theme-4 .key.color-4 { background-color: #673AB7; }
+        .theme-4 .key.color-5 { background-color: #5E35B1; }
+        .theme-4 .key.color-6 { background-color: #7986CB; }
+        .theme-4 .key.color-7 { background-color: #5C6BC0; }
+        .theme-4 .key.color-8 { background-color: #3F51B5; }
+        .theme-4 .key.color-9 { background-color: #303F9F; }
+        .theme-4 .key.color-10 { background-color: #1A237E; }
+        .theme-4 .key.color-11 { background-color: #4A148C; }
+        .theme-4 .key.color-12 { background-color: #6A1B9A; }
+
+        /* Тема 5: Карамель - Теплые бежево-коричневые оттенки */
+        .theme-5 #piano-container { background-color: #D3B88C; }
+        .theme-5 .key.color-1 { background-color: #FFF9C4; }
+        .theme-5 .key.color-2 { background-color: #FFF59D; }
+        .theme-5 .key.color-3 { background-color: #FFF176; }
+        .theme-5 .key.color-4 { background-color: #FFEE58; }
+        .theme-5 .key.color-5 { background-color: #FFEB3B; }
+        .theme-5 .key.color-6 { background-color: #FBC02D; }
+        .theme-5 .key.color-7 { background-color: #F9A825; }
+        .theme-5 .key.color-8 { background-color: #F57F17; }
+        .theme-5 .key.color-9 { background-color: #E0E0E0; }
+        .theme-5 .key.color-10 { background-color: #BDBDBD; }
+        .theme-5 .key.color-11 { background-color: #9E9E9E; }
+        .theme-5 .key.color-12 { background-color: #757575; }
+
+        /* Тема 6: Лаванда - Оттенки розового и фиолетового */
+        .theme-6 #piano-container { background-color: #9370DB; }
+        .theme-6 .key.color-1 { background-color: #F8BBD0; }
+        .theme-6 .key.color-2 { background-color: #F48FB1; }
+        .theme-6 .key.color-3 { background-color: #F06292; }
+        .theme-6 .key.color-4 { background-color: #EC407A; }
+        .theme-6 .key.color-5 { background-color: #E91E63; }
+        .theme-6 .key.color-6 { background-color: #E1BEE7; }
+        .theme-6 .key.color-7 { background-color: #CE93D8; }
+        .theme-6 .key.color-8 { background-color: #BA68C8; }
+        .theme-6 .key.color-9 { background-color: #AB47BC; }
+        .theme-6 .key.color-10 { background-color: #9C27B0; }
+        .theme-6 .key.color-11 { background-color: #7B1FA2; }
+        .theme-6 .key.color-12 { background-color: #4A148C; }
+
+        /* Тема 7: Геометрическая (Оставлена без изменений) */
+        .theme-7 #piano-container { background-color: #2F4F4F; }
+        .theme-7 .key.color-1 { background-color: #FF0000; }
+        .theme-7 .key.color-2 { background-color: #00FF00; }
+        .theme-7 .key.color-3 { background-color: #0000FF; }
+        .theme-7 .key.color-4 { background-color: #FFFF00; }
+        .theme-7 .key.color-5 { background-color: #FF00FF; }
+        .theme-7 .key.color-6 { background-color: #00FFFF; }
+        .theme-7 .key.color-7 { background-color: #800000; }
+        .theme-7 .key.color-8 { background-color: #008000; }
+        .theme-7 .key.color-9 { background-color: #000080; }
+        .theme-7 .key.color-10 { background-color: #808000; }
+        .theme-7 .key.color-11 { background-color: #800080; }
+        .theme-7 .key.color-12 { background-color: #008080; }
+
+        /* Тема 8: Цифровая Матрица */
+        .theme-8 #piano-container { background-color: #1a1a1a; }
+        .theme-8 .key.color-1 { background-color: #00FF00; } /* 0 */
+        .theme-8 .key.color-2 { background-color: #00CC00; } /* 1 */
+        .theme-8 .key.color-3 { background-color: #009900; } /* 2 */
+        .theme-8 .key.color-4 { background-color: #006600; } /* 3 */
+        .theme-8 .key.color-5 { background-color: #003300; } /* 4 */
+        .theme-8 .key.color-6 { background-color: #0000FF; } /* 5 */
+        .theme-8 .key.color-7 { background-color: #0000CC; } /* 6 */
+        .theme-8 .key.color-8 { background-color: #000099; } /* 7 */
+        .theme-8 .key.color-9 { background-color: #000066; } /* 8 */
+        .theme-8 .key.color-10 { background-color: #000033; } /* 9 */
+        .theme-8 .key.color-11 { background-color: #FF00FF; } /* # */
+        .theme-8 .key.color-12 { background-color: #FFFF00; } /* * */
+
+        /* Тема 9: Алфавитный Блок */
+        .theme-9 #piano-container { background-color: #f0f8ff; }
+        .theme-9 .key.color-1 { background-color: #FFB3BA; } /* A */
+        .theme-9 .key.color-2 { background-color: #FFDFBA; } /* B */
+        .theme-9 .key.color-3 { background-color: #FFFFBA; } /* C */
+        .theme-9 .key.color-4 { background-color: #BAFFC9; } /* D */
+        .theme-9 .key.color-5 { background-color: #BAE1FF; } /* E */
+        .theme-9 .key.color-6 { background-color: #BFBAFF; } /* F */
+        .theme-9 .key.color-7 { background-color: #D2BAFF; } /* G */
+        .theme-9 .key.color-8 { background-color: #E2BAFF; } /* H */
+        .theme-9 .key.color-9 { background-color: #F8BAFF; } /* I */
+        .theme-9 .key.color-10 { background-color: #FFBAF5; } /* J */
+        .theme-9 .key.color-11 { background-color: #FFBACF; } /* K */
+        .theme-9 .key.color-12 { background-color: #FFBAB4; } /* L */
+        
+        /* Тема 10: Космическое Путешествие */
+        .theme-10 #piano-container { background-color: #010126; }
+        .theme-10 .key.color-1 { background-color: #FFD700; } /* Солнце */
+        .theme-10 .key.color-2 { background-color: #A9A9A9; } /* Луна */
+        .theme-10 .key.color-3 { background-color: #FF4500; } /* Марс */
+        .theme-10 .key.color-4 { background-color: #4169E1; } /* Земля */
+        .theme-10 .key.color-5 { background-color: #8A2BE2; } /* Юпитер */
+        .theme-10 .key.color-6 { background-color: #FFC0CB; } /* Венера */
+        .theme-10 .key.color-7 { background-color: #00FFFF; } /* Нептун */
+        .theme-10 .key.color-8 { background-color: #DDA0DD; } /* Сатурн */
+        .theme-10 .key.color-9 { background-color: #ADFF2F; } /* Уран */
+        .theme-10 .key.color-10 { background-color: #7FFF00; } /* Плутон */
+        .theme-10 .key.color-11 { background-color: #FFA500; } /* Комета */
+        .theme-10 .key.color-12 { background-color: #9400D3; } /* Черная дыра */
+
+        /* Тема 11: Символьный Хаос */
+        .theme-11 #piano-container { background-color: #8B0000; } /* Темно-красный */
+        .theme-11 .key.color-1 { background-color: #ADD8E6; } /* ! */
+        .theme-11 .key.color-2 { background-color: #90EE90; } /* @ */
+        .theme-11 .key.color-3 { background-color: #DA70D6; } /* # */
+        .theme-11 .key.color-4 { background-color: #FFD700; } /* $ */
+        .theme-11 .key.color-5 { background-color: #FFA07A; } /* % */
+        .theme-11 .key.color-6 { background-color: #20B2AA; } /* ^ */
+        .theme-11 .key.color-7 { background-color: #DDA0DD; } /* & */
+        .theme-11 .key.color-8 { background-color: #B0C4DE; } /* * */
+        .theme-11 .key.color-9 { background-color: #FFB6C1; } /* ( */
+        .theme-11 .key.color-10 { background-color: #F0E68C; } /* ) */
+        .theme-11 .key.color-11 { background-color: #87CEEB; } /* { */
+        .theme-11 .key.color-12 { background-color: #FFDAB9; } /* } */
+
+        /* Тема 12: Фруктовый Сад */
+        .theme-12 #piano-container { background-color: #8FBC8F; } /* Темный морской зеленый */
+        .theme-12 .key.color-1 { background-color: #FF0000; } /* 🍎 */
+        .theme-12 .key.color-2 { background-color: #FFC0CB; } /* 🍓 */
+        .theme-12 .key.color-3 { background-color: #FFA500; } /* 🍊 */
+        .theme-12 .key.color-4 { background-color: #FFFF00; } /* 🍋 */
+        .theme-12 .key.color-5 { background-color: #ADFF2F; } /* 🍏 */
+        .theme-12 .key.color-6 { background-color: #8A2BE2; } /* 🍇 */
+        .theme-12 .key.color-7 { background-color: #4169E1; } /* 🫐 */
+        .theme-12 .key.color-8 { background-color: #DDA0DD; } /* 🍒 */
+        .theme-12 .key.color-9 { background-color: #FF6347; } /* 🍅 */
+        .theme-12 .key.color-10 { background-color: #DAA520; } /* 🍍 */
+        .theme-12 .key.color-11 { background-color: #F4A460; } /* 🥥 */
+        .theme-12 .key.color-12 { background-color: #BDB76B; } /* 🥝 */
+
+        /* Тема 13: Животный Мир */
+        .theme-13 #piano-container { background-color: #A0522D; } /* Коричневый */
+        .theme-13 .key.color-1 { background-color: #FFD700; } /* 🦁 */
+        .theme-13 .key.color-2 { background-color: #ADD8E6; } /* 🐘 */
+        .theme-13 .key.color-3 { background-color: #90EE90; } /* 🐒 */
+        .theme-13 .key.color-4 { background-color: #FFC0CB; } /* 🐼 */
+        .theme-13 .key.color-5 { background-color: #4169E1; } /* 🐬 */
+        .theme-13 .key.color-6 { background-color: #FFA07A; } /* 🦊 */
+        .theme-13 .key.color-7 { background-color: #D8BFD8; } /* 🦉 */
+        .theme-13 .key.color-8 { background-color: #F0E68C; } /* 🐥 */
+        .theme-13 .key.color-9 { background-color: #B0E0E6; } /* 🐧 */
+        .theme-13 .key.color-10 { background-color: #8B0000; } /* 🐞 */
+        .theme-13 .key.color-11 { background-color: #D2B48C; } /* 🐻 */
+        .theme-13 .key.color-12 { background-color: #FFFACD; } /* 🦋 */
+
+        /* Тема 14: Музыкальная Нотация */
+        .theme-14 #piano-container { background-color: #2F4F4F; } /* Темный */
+        .theme-14 .key.color-1 { background-color: #FFFFFF; } /* 🎵 */
+        .theme-14 .key.color-2 { background-color: #E0E0E0; } /* 🎶 */
+        .theme-14 .key.color-3 { background-color: #C0C0C0; } /* 🎼 */
+        .theme-14 .key.color-4 { background-color: #A0A0A0; } /* 🎸 */
+        .theme-14 .key.color-5 { background-color: #808080; } /* 🥁 */
+        .theme-14 .key.color-6 { background-color: #606060; } /* 🎹 */
+        .theme-14 .key.color-7 { background-color: #404040; } /* 🎺 */
+        .theme-14 .key.color-8 { background-color: #303030; } /* 🎻 */
+        .theme-14 .key.color-9 { background-color: #202020; } /* 🎤 */
+        .theme-14 .key.color-10 { background-color: #101010; } /* 🎧 */
+        .theme-14 .key.color-11 { background-color: #000000; } /* 🔊 */
+        .theme-14 .key.color-12 { background-color: #FFD700; } /* 🌟 */
+
+
+        /* ----- Эффекты эмодзи ----- */
+        .emoji-particle {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 10;
+            font-size: 3em;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            animation: emoji-float-and-fade 1.5s ease-out forwards;
+        }
+
+        @keyframes emoji-float-and-fade {
+            0% {
+                transform: translate(var(--delta-start-x, 0), var(--delta-start-y, 0)) scale(0);
+                opacity: 0;
+            }
+            20% {
+                transform: translate(var(--delta-mid-x, 0), var(--delta-mid-y, -20px)) scale(1.2);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--delta-end-x, 0), var(--delta-end-y, 0)) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* ----- Стили для кнопок ----- */
+        #random-sound-button,
+        #theme-toggle-button,
+        #demo-mode-button,
+        #settings-button {
+            padding: 15px 30px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            touch-action: manipulation;
+            position: fixed; /* Для всех фиксированных кнопок */
+            z-index: 100;
+        }
+        
+        #random-sound-button {
+            background-color: #4CAF50;
+            left: 20px; /* Позиция слева */
+            bottom: 20px;
+            padding: 15px 25px; /* Уменьшил паддинг для удобства */
+            font-size: 1.2em; /* Уменьшил шрифт */
+        }
+        #random-sound-button:hover { background-color: #45a049; }
+        #random-sound-button:active { transform: translateY(2px); box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3); }
+
+        #theme-toggle-button {
+            background-color: #6A5ACD;
+            bottom: 20px;
+            right: 20px;
+            width: 60px; height: 60px; border-radius: 50%; font-size: 2em; display: flex; justify-content: center; align-items: center;
+        }
+        #theme-toggle-button:hover { background-color: #5b4da6; }
+        #theme-toggle-button:active { transform: translateY(2px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); }
+
+        #demo-mode-button {
+            background-color: #20B2AA;
+            bottom: 90px;
+            right: 20px;
+            width: 60px; height: 60px; border-radius: 50%; font-size: 2em; display: flex; justify-content: center; align-items: center;
+        }
+        #demo-mode-button:hover { background-color: #1a928c; }
+        #demo-mode-button:active { transform: translateY(2px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); }
+        #demo-mode-button.active-demo { background-color: #DC143C; animation: pulse 1s infinite alternate; }
+
+        #settings-button {
+            background-color: #FFC107;
+            bottom: 160px;
+            right: 20px;
+            width: 60px; height: 60px; border-radius: 50%; font-size: 2em; display: flex; justify-content: center; align-items: center;
+        }
+        #settings-button:hover { background-color: #e0b000; }
+        #settings-button:active { transform: translateY(2px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); }
+
+        /* ----- Стили для всплывающего окна настроек ----- */
+        #settings-panel {
+            position: fixed;
+            bottom: 230px; 
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 101;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 1.1em;
+            color: #333;
+            touch-action: manipulation;
+            max-height: calc(100vh - 250px); 
+            overflow-y: auto; 
+        }
+
+        #settings-panel.active {
+            display: flex;
+        }
+
+        #settings-panel h3 {
+            margin: 0 0 10px 0;
+            color: #555;
+        }
+
+        #settings-panel label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            justify-content: space-between;
+            width: 100%;
+        }
+        
+        #settings-panel label span {
+            white-space: nowrap;
+            flex-grow: 1;
+        }
+
+        .slider-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 70%;
+        }
+        .slider-control input[type="range"] {
+            width: auto;
+            flex-grow: 1;
+        }
+        .slider-control .slider-value {
+            min-width: 30px;
+            text-align: right;
+            font-weight: bold;
+            color: #6A5ACD;
+        }
+
+
+        #settings-panel input[type="radio"],
+        #settings-panel input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+            accent-color: #6A5ACD;
+        }
+
+        /* Стили для ползунков */
+        #settings-panel input[type="range"] {
+            -webkit-appearance: none;
+            height: 8px;
+            background: #ddd;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+            border-radius: 5px;
+        }
+
+        #settings-panel input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        #settings-panel input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #6A5ACD;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+
+        #settings-panel input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #6A5ACD;
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+
+        /* ----- Новый контейнер для дороги и машинки ----- */
+        #car-road-container {
+            position: absolute;
+            top: 0; 
+            left: 0;
+            transform: none;
+            max-width: 1200px;
+            background-color: #666;
+            border-radius: 5px;
+            overflow: hidden;
+            z-index: 50;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+            border: 2px solid #555;
+            display: flex;
+            align-items: center;
+            transition: width 0.3s ease, top 0.3s ease, left 0.3s ease, height 0.3s ease;
+        }
+
+        /* Анимированные дорожные линии */
+        .road-line {
+            position: absolute;
+            width: 30px;
+            height: 8px;
+            background-color: #FFF;
+            border-radius: 2px;
+            animation: road-line-move 1s linear infinite;
+        }
+        .road-line:nth-child(1) { left: 0%; animation-delay: 0s; }
+        .road-line:nth-child(2) { left: 25%; animation-delay: -0.25s; }
+        .road-line:nth-child(3) { left: 50%; animation-delay: -0.5s; }
+        .road-line:nth-child(4) { left: 75%; animation-delay: -0.75s; }
+        .road-line:nth-child(5) { left: 100%; animation-delay: -1s; }
+        .road-line:nth-child(6) { left: 125%; animation-delay: -1.25s; }
+        .road-line:nth-child(7) { left: 150%; animation-delay: -1.5s; }
+        .road-line:nth-child(8) { left: 175%; animation-delay: -1.75s; }
+        .road-line:nth-child(9) { left: 200%; animation-delay: -2s; }
+
+        @keyframes road-line-move {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Визуальный эффект для дорожных линий при нажатии */
+        .road-line.active-line {
+            background-color: var(--road-active-color, #FFFF00); /* Цвет зависит от темы */
+            box-shadow: 0 0 10px 3px var(--road-active-color, #FFFF00);
+            transition: background-color 0.1s ease-out, box-shadow 0.1s ease-out;
+        }
+
+
+        /* ----- Стили для анимированного транспорта ----- */
+        #vehicle-emoji {
+            position: absolute;
+            font-size: 3.5em;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 51;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+        }
+
+        /* ----- Стили для домов и деревьев ----- */
+        #landscape-container {
+            position: absolute;
+            top: -120px; 
+            left: 0;
+            height: 180px; 
+            overflow: hidden;
+            z-index: 49;
+            transition: height 0.3s ease, top 0.3s ease, width 0.3s ease, background 0.8s ease-in-out; 
+            animation: landscape-move 15s linear infinite;
+        }
+
+        @keyframes landscape-move {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-66.66%); }
+        }
+
+        .house, .tree {
+            position: absolute;
+            bottom: 0;
+            pointer-events: none;
+            transform: translateX(-50%);
+        }
+
+        .building-emoji {
+            font-size: 4.5em;
+        }
+        .tree-emoji {
+            font-size: 5.5em;
+        }
+
+        /* ----- Стили для динамического фона за пианино ----- */
+        #dynamic-piano-background {
+            position: absolute;
+            transform: translateX(-50%); /* Центрируем по горизонтали */
+            top: 0; /* Будет задано JS */
+            left: 50%; /* Центрируем по горизонтали */
+            width: 100%; /* Ширина пианино */
+            height: 100%; /* Высота пианино */
+            border-radius: 15px;
+            background-color: transparent;
+            box-shadow: 0 0 0px 0px rgba(255, 255, 255, 0.7);
+            opacity: 0;
+            transition: background-color 0.1s ease-out; /* Для плавного изменения цвета */
+            pointer-events: none;
+            z-index: 59; /* Ниже пианино, но выше дороги */
+        }
+
+        .dynamic-background-pulse {
+            animation: background-pulse 0.4s ease-out forwards;
+        }
+
+        @keyframes background-pulse {
+            0% {
+                transform: translateX(-50%) scale(1);
+                opacity: 0;
+                box-shadow: 0 0 0px 0px var(--pulse-color, rgba(255, 255, 255, 0.7));
+            }
+            20% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1.02);
+                box-shadow: 0 0 20px 10px var(--pulse-color, rgba(255, 255, 255, 0.7));
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) scale(1.05);
+                box-shadow: 0 0 0px 0px var(--pulse-color, rgba(255, 255, 255, 0));
+            }
+        }
+
+    </style>
+</head>
+<body class="theme-0">
+
+    <div id="car-road-container">
+        <div class="road-line"></div>
+        <div class="road-line"></div>
+        <div class="road-line"></div>
+        <div class="road-line"></div>
+        <div class="road-line"></div>
+        <div class="road-line"></div>
+        <div class="road-line"></div>
+        <div class="road-line"></div>
+        <div class="road-line"></div>
+        <div id="vehicle-emoji">🚗</div>
+
+        <div id="landscape-container">
+            </div>
+    </div>
+
+    <div id="dynamic-piano-background"></div>
+
+    <div id="piano-container">
+        </div>
+    
+    <button id="random-sound-button">Случайный Звук!</button>
+
+    <button id="theme-toggle-button">🎨</button>
+
+    <button id="demo-mode-button">🎶</button>
+
+    <button id="settings-button">⚙️</button>
+
+    <div id="settings-panel">
+        <h3>Эмодзи:</h3>
+        <label>
+            <input type="radio" name="emoji_origin" value="key" checked> От клавиши
+        </label>
+        <label>
+            <input type="radio" name="emoji_origin" value="fullscreen"> По всему экрану
+        </label>
+        <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+        <h3>Экран:</h3>
+        <label>
+            <input type="checkbox" id="fullscreen-toggle"> Полноэкранный режим
+        </label>
+        <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+        <h3>Звук:</h3>
+        <label>
+            <input type="checkbox" id="theme-sound-toggle" checked> Звуки по теме
+        </label>
+        <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+        <h3>Дорога:</h3>
+        <label>
+            <span>Высота:</span>
+            <div class="slider-control">
+                <input type="range" id="road-height-slider" min="40" max="120" value="102">
+                <span class="slider-value" id="road-height-value">102</span>
+            </div>
+        </label>
+        <label>
+            <span>Ширина:</span>
+            <div class="slider-control">
+                <input type="range" id="road-width-slider" min="100" max="300" value="100">
+                <span class="slider-value" id="road-width-value">100</span>
+            </div>
+        </label>
+        <label>
+            <span>Верхний отступ:</span>
+            <div class="slider-control">
+                <input type="range" id="road-top-offset-slider" min="-100" max="0" value="-100">
+                <span class="slider-value" id="road-top-offset-value">-100</span>
+            </div>
+        </label>
+        <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+        <h3>Ландшафт:</h3>
+        <label>
+            <span>Высота фона:</span>
+            <div class="slider-control">
+                <input type="range" id="landscape-height-slider" min="100" max="300" value="200">
+                <span class="slider-value" id="landscape-height-value">200</span>
+            </div>
+        </label>
+        <label>
+            <input type="checkbox" id="theme-background-toggle" checked> Фон по теме
+        </label>
+        <hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+        <h3>Фон:</h3>
+        <label>
+            <input type="checkbox" id="dynamic-background-toggle" checked> Анимированный фон
+        </label>
+        <label>
+            <input type="checkbox" id="piano-wave-effect-toggle" checked> Волновой эффект пианино
+        </label>
+        <label>
+            <input type="checkbox" id="road-glow-effect-toggle" checked> Свечение дороги
+        </label>
+    </div>
+
+    <script>
+        const pianoContainer = document.getElementById('piano-container');
+        const randomSoundButton = document.getElementById('random-sound-button');
+        const themeToggleButton = document.getElementById('theme-toggle-button');
+        const settingsButton = document.getElementById('settings-button');
+        const demoModeButton = document.getElementById('demo-mode-button');
+        const settingsPanel = document.getElementById('settings-panel');
+        const emojiOriginRadios = document.querySelectorAll('input[name="emoji_origin"]');
+        const fullscreenToggle = document.getElementById('fullscreen-toggle');
+        const themeSoundToggle = document.getElementById('theme-sound-toggle'); 
+        const themeBackgroundToggle = document.getElementById('theme-background-toggle'); 
+        const dynamicBackgroundToggle = document.getElementById('dynamic-background-toggle');
+
+        // Новые элементы для визуальных эффектов
+        const dynamicPianoBackground = document.getElementById('dynamic-piano-background');
+        const roadLines = document.querySelectorAll('.road-line'); // Для эффекта свечения дороги
+
+        const carRoadContainer = document.getElementById('car-road-container');
+        const vehicleEmoji = document.getElementById('vehicle-emoji');
+        const landscapeContainer = document.getElementById('landscape-container');
+
+        const roadHeightSlider = document.getElementById('road-height-slider');
+        const roadWidthSlider = document.getElementById('road-width-slider');
+        const roadTopOffsetSlider = document.getElementById('road-top-offset-slider');
+        const landscapeHeightSlider = document.getElementById('landscape-height-slider');
+
+        // Новые чекбоксы для настроек визуала
+        const pianoWaveEffectToggle = document.getElementById('piano-wave-effect-toggle');
+        const roadGlowEffectToggle = document.getElementById('road-glow-effect-toggle');
+        
+        // Элементы для отображения значений ползунков
+        const roadHeightValue = document.getElementById('road-height-value');
+        const roadWidthValue = document.getElementById('road-width-value');
+        const roadTopOffsetValue = document.getElementById('road-top-offset-value');
+        const landscapeHeightValue = document.getElementById('landscape-height-value');
+
+
+        const numberOfKeys = 12; // Количество клавиш остается 12
+
+        // Расширенный список надписей для клавиш
+        const keyLabels = [
+            'До', 'Ре', 'Ми', 'Фа', 'Соль', 'Ля', 'Си', 'Пиу', 'Бам', 'Вжух', 'Хоп', 'Бззз', // Тема 0-6
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '#', '*', // Тема 8: Цифры
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', // Тема 9: Буквы
+            '☀️', '🌕', '🪐', '🌍', '☄️', '🌌', '🌠', '✨', '🚀', '👽', '💫', '🔭', // Тема 10: Космос
+            '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '{', '}', // Тема 11: Символы
+            '🍎', '🍓', '🍊', '🍋', '🍏', '🍇', '🫐', '🍒', '🍅', '🍍', '🥥', '🥝', // Тема 12: Фрукты
+            '🦁', '🐘', '🐒', '🐼', '🐬', '🦊', '🦉', '🐥', '🐧', '🐞', '🐻', '🦋', // Тема 13: Животные
+            '🎵', '🎶', '🎼', '🎸', '🥁', '🎹', '🎺', '🎻', '🎤', '🎧', '🔊', '🌟'  // Тема 14: Музыка
+        ];
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        const frequencies = [
+            261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88,
+            523.25, 587.33, 659.25, 739.99, 783.99
+        ];
+
+        // Расширенные темы эмодзи
+        const emojiThemes = [
+            ['😊', '😂', '🤩', '🥳', '🌈', '🎉', '🌟', '💖'], // 0
+            ['🐠', '🐳', '🐬', '🐙', '🌊', '💦', '🐚', '⚓'], // 1
+            ['☀️', '🌅', '🔥', '🧡', '💛', '🌸', '🌼', '🐝'], // 2
+            ['🌳', '🍄', '🐿️', '🐻', '🦊', '🌿', '🌷', '🦋'], // 3
+            ['✨', '🌌', '🌠', '🚀', '👽', '🔮', '💫', '🌕'], // 4
+            ['🍬', '🍭', '🍦', '🍩', '🍪', '🍰', '🍫', '🍓'], // 5
+            ['💜', '💖', '🌸', '✨', '💎', '🦄', '🕊️', '🎀'], // 6
+            ['🟥', '🟧', '🟨', '🟩', '🟦', '🟪', '🟫'], // 7
+            ['0️⃣', '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔢', '🔠'], // 8: Цифры
+            ['🅰️', '🅱️', '©️', '🇩', '🇪', '🇫', '🇬', '🇭', '🇮', '🇯', '🇰', '🇱'], // 9: Буквы
+            ['🌟', '🌠', '🚀', '🌌', '👽', '🛰️', '💫', '☄️'], // 10: Космос
+            ['⁉️', '❓', '❕', '❗', '⭕', '✖️', '➕', '➖', '➗', '💯', '♾️', '✅'], // 11: Символы
+            ['🍉', '🍇', '🍌', '🍍', '🥭', '🍑', '🍒', '🥝', '🥥', '🍓', '🍋', '🍐'], // 12: Фрукты
+            ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮'], // 13: Животные
+            ['🎵', '🎶', '🎼', '🎹', '🎸', '🥁', '🎷', '🎺', '🎻', '🎤', '🎧', '📻'] // 14: Музыка
+        ];
+
+        // Расширенные темы транспорта
+        const vehicleThemes = [
+            ['🚗', '🚕', '🚓', '🚚', '🚌', '🚜'], // 0
+            ['⛵', '🚤', '🛳️', '🚢', '⚓'], // 1
+            ['✈️', '🚁', '🚀', '🎈', '🛸'], // 2
+            ['🚜', '🚛', '🚂', '🚲', '🛴'], // 3
+            ['🚀', '🛸', '🛰️'], // 4
+            ['🍦', '🍩', '🍰'], // 5
+            ['🦄', '🕊️', '🎠'], // 6
+            ['🚙', '🏎️', '🏍️', '🚂'], // 7
+            ['💻', '💾', '💿', '📱', '🤖', '🖥️'], // 8: Цифры (техника)
+            ['🖍️', '✏️', '📖', '📚', '📝', '📏'], // 9: Буквы (школьные)
+            ['🚀', '🛸', '🛰️', '☄️', '🌌', '🌠'], // 10: Космос
+            ['⚙️', '🔗', '💡', '⏰', '⏳', '🎲'], // 11: Символы
+            ['🚚', '🚛', '🛒', '🧺'], // 12: Фрукты (тележки/корзины)
+            ['🐎', '🐄', '🐖', '🐑', '🐔', '🐕'], // 13: Животные (домашние)
+            ['🎺', '🎻', '🥁', '🎹', '🎶', '🎤'] // 14: Музыка
+        ];
+
+        // Расширенные темы ландшафта
+        const landscapeThemes = [
+            {
+                buildings: ['🏠', '🏡', '🏘️', '🏢', '🏫', '🏥', '🏦', '🏭'],
+                trees: ['🌳', '🌲', '🌴', '🌱', '🌿', '🍂']
+            },
+            {
+                buildings: ['🌊', '🦀', '🐠', '🐙', '🐚', '⚓'],
+                trees: ['🐠', '🐳', '🐬', '🐙']
+            },
+            {
+                buildings: ['🏜️', '⛺', '🌅', '🔥'],
+                trees: ['🌵', '🌴']
+            },
+            {
+                buildings: ['🛖', ' log cabin', '🏡'],
+                trees: ['🌲', '🌳', '🍂', '🍄']
+            },
+            {
+                buildings: ['🌌', '👽', '🛸', '🛰️'],
+                trees: ['🌠', '✨', '💫', '☄️']
+            },
+            {
+                buildings: [' gingerbread house', '🍭', '🍬', '🍦', '🍩'],
+                trees: ['🍬', '🍭', '🍫', '🍓', '🍰']
+            },
+            {
+                buildings: ['🏰', '🎠', '💒', '🏛️'],
+                trees: ['🌸', '🌷', '🌳', '🕊️']
+            },
+            // Theme 7: Геометрическая
+            {
+                buildings: ['🟥', '🟧', '🟨', '🟩', '🟦', '🟪', '🟫'],
+                trees: ['🔺', '🔷', '🔶', '⚪', '⚫']
+            },
+            // Theme 8: Цифровая Матрица
+            {
+                buildings: ['🏢', '🏭', '📡', '📊', '📈', '📉'],
+                trees: ['💾', '💿', '💻', '📱']
+            },
+            // Theme 9: Алфавитный Блок
+            {
+                buildings: ['🏫', '📚', '📖', '📝', '🖍️'],
+                trees: ['🅰️', '🅱️', '🆎', '🔡']
+            },
+            // Theme 10: Космическое Путешествие
+            {
+                buildings: ['🚀', '🌌', '🌠', '🛰️', '🛸'],
+                trees: ['🌟', '✨', '💫', '☄️']
+            },
+            // Theme 11: Символьный Хаос
+            {
+                buildings: ['❓', '❕', '💯', '♾️', '✅'],
+                trees: ['💡', '⏰', '🎲', '🔗']
+            },
+            // Theme 12: Фруктовый Сад
+            {
+                buildings: ['🏡', '🏠', '🧺'],
+                trees: ['🌳', '🍎', '🍓', '🍊', '🍋']
+            },
+            // Theme 13: Животный Мир
+            {
+                buildings: ['🏠', '🏡', ' barn', ' corral'],
+                trees: ['🌳', '🌲', '🌿', '🌱']
+            },
+            // Theme 14: Музыкальная Нотация
+            {
+                buildings: ['🎼', '🎵', '🎶', '🎙️', '📻'],
+                trees: ['🎸', '🥁', '🎹', '🎺']
+            }
+        ];
+
+        // ----- Параметры звуковых тем -----
+        const soundThemes = [
+            { oscillatorType: 'sine', duration: 0.3, gain: 1 }, // 0
+            { oscillatorType: 'sine', duration: 0.5, gain: 1 }, // 1
+            { oscillatorType: 'triangle', duration: 0.4, gain: 0.8 }, // 2
+            { oscillatorType: 'square', duration: 0.2, gain: 0.9 }, // 3
+            { oscillatorType: 'sine', duration: 0.15, gain: 1.2 }, // 4
+            { oscillatorType: 'sawtooth', duration: 0.25, gain: 1 }, // 5
+            { oscillatorType: 'triangle', duration: 0.6, gain: 0.7 }, // 6
+            { oscillatorType: 'square', duration: 0.1, gain: 1.5 }, // 7: Геометрическая
+            { oscillatorType: 'sawtooth', duration: 0.15, gain: 1.1 }, // 8: Цифровая (более резкий, быстрый)
+            { oscillatorType: 'sine', duration: 0.2, gain: 0.9, detune: 50 }, // 9: Алфавит (немного искаженный синус)
+            { oscillatorType: 'triangle', duration: 0.7, gain: 0.6, detune: -100 }, // 10: Космос (долгое затухание)
+            { oscillatorType: 'square', duration: 0.08, gain: 1.3 }, // 11: Символы (очень короткий, кликающий)
+            { oscillatorType: 'sine', duration: 0.3, gain: 0.7 }, // 12: Фрукты (мягкий синус)
+            { oscillatorType: 'square', duration: 0.25, gain: 0.8 }, // 13: Животные (немного мультяшный)
+            { oscillatorType: 'sine', duration: 0.4, gain: 1.0 } // 14: Музыка (чистый, стандартный)
+        ];
+
+        // ----- Параметры градиентного фона для BODY -----
+        const bodyBackgroundThemes = [
+            'linear-gradient(to top right, #ADD8E6, #FFB6C1, #FFFFE0)', // 0
+            'linear-gradient(to top, #001f3f, #004080, #008080)', // 1
+            'linear-gradient(to bottom, #FF8C00, #FF4500, #800080)', // 2
+            'linear-gradient(to top, #32CD32, #6B8E23, #D2B48C)', // 3
+            'linear-gradient(to bottom, #000000, #191970, #4169E1)', // 4
+            'linear-gradient(to top right, #D2B48C, #A0522D, #8B4513)', // 5
+            'linear-gradient(to top, #E6E6FA, #D8BFD8, #DA70D6)', // 6
+            'linear-gradient(to top left, #FF00FF, #00FFFF, #FFFF00)', // 7
+            'linear-gradient(to bottom, #000000, #003300, #006600)', // 8: Цифровая Матрица
+            'linear-gradient(to top, #F0F8FF, #ADD8E6, #FFDAB9)', // 9: Алфавитный Блок
+            'linear-gradient(to bottom right, #010126, #4B0082, #000080)', // 10: Космос
+            'linear-gradient(to top left, #8B0000, #B22222, #CD5C5C)', // 11: Символьный Хаос
+            'linear-gradient(to top, #3CB371, #90EE90, #FFD700)', // 12: Фрукты
+            'linear-gradient(to bottom, #A0522D, #D2B48C, #BDB76B)', // 13: Животные
+            'linear-gradient(to top, #2F4F4F, #696969, #C0C0C0)' // 14: Музыка
+        ];
+
+        // ----- Параметры для динамического анимированного фона BODY -----
+        const animatedBackgroundColors = [
+            ['#ADD8E6', '#FFB6C1', '#FFFFE0'], // 0
+            ['#001f3f', '#004080', '#008080'], // 1
+            ['#FF8C00', '#FF4500', '#800080'], // 2
+            ['#32CD32', '#6B8E23', '#D2B48C'], // 3
+            ['#000000', '#191970', '#4169E1'], // 4
+            ['#D2B48C', '#A0522D', '#8B4513'], // 5
+            ['#E6E6FA', '#D8BFD8', '#DA70D6'], // 6
+            ['#FF00FF', '#00FFFF', '#FFFF00'], // 7
+            ['#000000', '#006600', '#00CC00'], // 8: Цифровая Матрица
+            ['#F0F8FF', '#BAFFC9', '#BAE1FF'], // 9: Алфавитный Блок
+            ['#010126', '#4B0082', '#000080', '#000050'], // 10: Космос
+            ['#8B0000', '#CD5C5C', '#FFA07A'], // 11: Символы
+            ['#3CB371', '#90EE90', '#FFD700', '#FFA500'], // 12: Фрукты
+            ['#A0522D', '#D2B48C', '#BDB76B', '#FFD700'], // 13: Животные
+            ['#2F4F4F', '#696969', '#C0C0C0', '#FFFFFF'] // 14: Музыка
+        ];
+        let backgroundAnimationInterval;
+
+        // Цвета для эффекта свечения клавиш/фона и дорожных линий
+        const glowColors = [
+            ['rgba(255, 99, 71, 0.7)', 'rgba(255, 215, 0, 0.7)', 'rgba(50, 205, 50, 0.7)'], // 0
+            ['rgba(77, 182, 172, 0.7)', 'rgba(25, 118, 210, 0.7)', 'rgba(66, 165, 245, 0.7)'], // 1
+            ['rgba(255, 65, 54, 0.7)', 'rgba(255, 171, 145, 0.7)', 'rgba(255, 196, 0, 0.7)'], // 2
+            ['rgba(139, 195, 74, 0.7)', 'rgba(76, 175, 80, 0.7)', 'rgba(175, 215, 112, 0.7)'], // 3
+            ['rgba(149, 117, 205, 0.7)', 'rgba(92, 107, 192, 0.7)', 'rgba(63, 81, 181, 0.7)'], // 4
+            ['rgba(255, 235, 59, 0.7)', 'rgba(251, 192, 45, 0.7)', 'rgba(245, 127, 23, 0.7)'], // 5
+            ['rgba(240, 98, 146, 0.7)', 'rgba(186, 104, 200, 0.7)', 'rgba(156, 39, 176, 0.7)'], // 6
+            ['rgba(255, 0, 0, 0.8)', 'rgba(0, 255, 0, 0.8)', 'rgba(0, 0, 255, 0.8)'], // 7
+            ['rgba(0, 255, 0, 0.7)', 'rgba(0, 102, 0, 0.7)', 'rgba(0, 0, 255, 0.7)'], // 8: Цифровая Матрица
+            ['rgba(255, 179, 186, 0.7)', 'rgba(186, 255, 201, 0.7)', 'rgba(186, 225, 255, 0.7)'], // 9: Алфавитный Блок
+            ['rgba(255, 215, 0, 0.7)', 'rgba(169, 169, 169, 0.7)', 'rgba(65, 105, 225, 0.7)'], // 10: Космос
+            ['rgba(255, 0, 0, 0.7)', 'rgba(0, 255, 255, 0.7)', 'rgba(255, 255, 0, 0.7)'], // 11: Символы (яркие, контрастные)
+            ['rgba(255, 0, 0, 0.7)', 'rgba(255, 192, 203, 0.7)', 'rgba(255, 165, 0, 0.7)'], // 12: Фрукты
+            ['rgba(255, 215, 0, 0.7)', 'rgba(173, 216, 230, 0.7)', 'rgba(144, 238, 144, 0.7)'], // 13: Животные
+            ['rgba(255, 255, 255, 0.8)', 'rgba(224, 224, 224, 0.8)', 'rgba(192, 192, 192, 0.8)'] // 14: Музыка
+        ];
+
+
+        const themeClasses = [
+            'theme-0', 'theme-1', 'theme-2', 'theme-3', 'theme-4', 'theme-5', 'theme-6', 'theme-7',
+            'theme-8', 'theme-9', 'theme-10', 'theme-11', 'theme-12', 'theme-13', 'theme-14'
+        ];
+        // Устанавливаем значения по умолчанию, которые будут перезаписаны при загрузке настроек
+        let currentThemeIndex = 0;
+        let emojiOriginMode = 'key';
+        let useThemeSounds = true;
+        let useThemeBackground = true;
+        let useDynamicBackground = true;
+        let usePianoWaveEffect = true; 
+        let useRoadGlowEffect = true; 
+
+
+        let isDemoModeActive = false;
+        let demoTimeoutId = null;
+        let currentMelodyIndex = 0;
+        let currentNoteIndex = 0;
+
+        // Мелодии остались прежними, они используют индексы клавиш, которые универсальны
+        const melodies = [
+            [0, 0, 4, 4, 5, 5, 4, -1, 3, 3, 2, 2, 1, 1, 0],
+            [2, 1, 0, 1, 2, 2, 2, -1, 1, 1, 1, -1, 2, 2, 2, -1, 2, 1, 0, 1, 2, 2, 2],
+            [0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 2, 1, 0]
+        ];
+        const noteDuration = 300;
+        const pauseDuration = 500;
+
+        let currentVehiclePosition = 0;
+        const vehicleStepDistance = 50;
+
+        // Создаем элементы клавиш
+        // Этот цикл должен быть обновлен, чтобы динамически присваивать надписи из keyLabels
+        pianoContainer.innerHTML = ''; // Очищаем контейнер перед добавлением новых клавиш
+        for (let i = 0; i < numberOfKeys; i++) {
+            const key = document.createElement('div');
+            key.classList.add('key', `color-${i + 1}`);
+            key.dataset.frequency = frequencies[i % frequencies.length];
+            key.dataset.index = i;
+            // Надпись на клавише теперь зависит от текущей темы и индекса клавиши
+            // Это будет установлено функцией applyTheme
+            // key.textContent = keyLabels[i % keyLabels.length]; // Удаляем отсюда
+
+            key.addEventListener('mousedown', (event) => {
+                event.preventDefault();
+                if (isDemoModeActive) {
+                    stopDemoMode();
+                }
+                const freq = parseFloat(key.dataset.frequency);
+                playSound(freq);
+                playEmojiEffect(key);
+                moveVehicleStep();
+                scheduleVehicleFadeOut();
+                applyPianoContainerPulseEffect(); // НОВЫЙ ВЫЗОВ: пульсация контейнера
+                applyKeyGlowEffect(key);         // ИЗМЕНЕННЫЙ ВЫЗОВ: свечение клавиши
+                applyRoadLineEffect(); // Вызов эффекта дорожных линий
+                key.classList.add('pressed');
+            });
+
+            key.addEventListener('mouseup', () => {
+                key.classList.remove('pressed');
+            });
+
+            key.addEventListener('mouseleave', () => {
+                key.classList.remove('pressed');
+            });
+
+            pianoContainer.appendChild(key);
+        }
+        
+        // Вспомогательная функция для обновления надписей на клавишах
+        function updateKeyLabels() {
+            const keys = pianoContainer.children;
+            const labelStartIndex = currentThemeIndex * numberOfKeys; // Индекс начала надписей для текущей темы
+            for (let i = 0; i < numberOfKeys; i++) {
+                if (keys[i]) {
+                    keys[i].textContent = keyLabels[labelStartIndex + i] || keyLabels[i]; // Используем конкретный индекс, если есть, иначе дефолтный
+                }
+            }
+        }
+
+
+        function playSound(frequency) {
+            const now = audioContext.currentTime;
+
+            let oscillatorType = 'sine'; // Дефолтный тип
+            let duration = 0.3;         // Дефолтная длительность
+            let gain = 1;               // Дефолтный гейн
+            let detune = 0;             // Отстройка частоты
+
+            if (useThemeSounds) { // Если включены звуки по теме
+                const currentSoundTheme = soundThemes[currentThemeIndex];
+                oscillatorType = currentSoundTheme.oscillatorType;
+                duration = currentSoundTheme.duration;
+                gain = currentSoundTheme.gain;
+                detune = currentSoundTheme.detune || 0; // Используем detune, если есть
+            }
+
+            const oscillator = audioContext.createOscillator();
+            oscillator.type = oscillatorType; 
+            oscillator.frequency.setValueAtTime(frequency, now);
+            oscillator.detune.setValueAtTime(detune, now); // Применяем detune
+
+            const gainNode = audioContext.createGain();
+            gainNode.gain.setValueAtTime(gain, now); 
+            gainNode.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.start(now);
+            oscillator.stop(now + duration);
+        }
+
+        function playEmojiEffect(keyElement) {
+            let startX, startY;
+            let targetElement;
+
+            if (emojiOriginMode === 'key') {
+                const rect = keyElement.getBoundingClientRect();
+                const containerRect = pianoContainer.getBoundingClientRect();
+                
+                startX = rect.left - containerRect.left + (rect.width / 2);
+                startY = rect.top - containerRect.top + (rect.height / 2);
+                targetElement = pianoContainer;
+            } else {
+                startX = Math.random() * window.innerWidth;
+                startY = Math.random() * window.innerHeight;
+                targetElement = document.body;
+            }
+            
+            const midX = 0;
+            const midY = -20;
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 100 + Math.random() * 200;
+            const endX = Math.cos(angle) * distance;
+            const endY = Math.sin(angle) * distance;
+            
+            const emojisForCurrentTheme = emojiThemes[currentThemeIndex];
+            const emojiCount = 3;
+
+            for (let i = 0; i < emojiCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('emoji-particle');
+                
+                const randomEmoji = emojisForCurrentTheme[Math.floor(Math.random() * emojisForCurrentTheme.length)];
+                particle.textContent = randomEmoji;
+
+                particle.style.left = `${startX}px`;
+                particle.style.top = `${startY}px`;
+
+                particle.style.setProperty('--delta-start-x', `0px`);
+                particle.style.setProperty('--delta-start-y', `0px`);
+                particle.style.setProperty('--delta-mid-x', `${midX}px`);
+                particle.style.setProperty('--delta-mid-y', `${midY}px`);
+                particle.style.setProperty('--delta-end-x', `${endX}px`);
+                particle.style.setProperty('--delta-end-y', `${endY}px`);
+
+                targetElement.appendChild(particle);
+                
+                particle.addEventListener('animationend', () => {
+                    particle.remove();
+                });
+            }
+        }
+
+        // ----- Функция для движения транспорта шаг за шагом -----
+        function moveVehicleStep() {
+            vehicleEmoji.classList.add('active-vehicle');
+            vehicleEmoji.classList.remove('disappearing');
+
+            const currentVehicles = vehicleThemes[currentThemeIndex];
+            const randomVehicle = currentVehicles[Math.floor(Math.random() * currentVehicles.length)];
+            vehicleEmoji.textContent = randomVehicle;
+
+            currentVehiclePosition += vehicleStepDistance;
+
+            if (currentVehiclePosition >= carRoadContainer.offsetWidth) {
+                currentVehiclePosition = 0;
+            }
+
+            vehicleEmoji.style.left = `${currentVehiclePosition}px`;
+            vehicleEmoji.style.top = `${carRoadContainer.offsetHeight / 2}px`;
+            vehicleEmoji.style.opacity = 1;
+
+            vehicleEmoji.style.transform = `translate(-50%, -50%)`;
+        }
+
+        // Инициализируем транспорт в начале дороги при загрузке
+        function resetVehiclePosition() {
+            currentVehiclePosition = 0;
+            vehicleEmoji.style.left = `${currentVehiclePosition}px`;
+            vehicleEmoji.style.top = `${carRoadContainer.offsetHeight / 2}px`;
+            vehicleEmoji.style.opacity = 0;
+            vehicleEmoji.classList.remove('active-vehicle', 'disappearing');
+            const currentVehicles = vehicleThemes[currentThemeIndex];
+            // Убедимся, что vehicleThemes[currentThemeIndex] не пуст
+            if (currentVehicles && currentVehicles.length > 0) {
+                vehicleEmoji.textContent = currentVehicles[0];
+            } else {
+                vehicleEmoji.textContent = '❓'; // Запасной вариант
+            }
+        }
+
+        let vehicleVisibilityTimeout;
+        function scheduleVehicleFadeOut() {
+            clearTimeout(vehicleVisibilityTimeout);
+            vehicleVisibilityTimeout = setTimeout(() => {
+                vehicleEmoji.classList.add('disappearing');
+            }, 1000);
+        }
+        
+        vehicleEmoji.addEventListener('transitionend', (event) => {
+            if (event.propertyName === 'opacity' && vehicleEmoji.style.opacity == 0) {
+                 vehicleEmoji.classList.remove('disappearing');
+                 vehicleEmoji.classList.remove('active-vehicle');
+            }
+        });
+
+        randomSoundButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (isDemoModeActive) {
+                stopDemoMode();
+            }
+            const randomIndex = Math.floor(Math.random() * numberOfKeys);
+            const randomKeyElement = pianoContainer.children[randomIndex];
+
+            if (randomKeyElement) {
+                playSound(parseFloat(randomKeyElement.dataset.frequency));
+                playEmojiEffect(randomKeyElement);
+                moveVehicleStep();
+                scheduleVehicleFadeOut();
+                applyPianoContainerPulseEffect(); // НОВЫЙ ВЫЗОВ: пульсация контейнера
+                applyKeyGlowEffect(randomKeyElement); // ИЗМЕНЕННЫЙ ВЫЗОВ: свечение клавиши
+                applyRoadLineEffect(); 
+                randomKeyElement.classList.add('pressed');
+                setTimeout(() => {
+                    randomKeyElement.classList.remove('pressed');
+                }, 100);
+            }
+        });
+
+        // ----- Функция для применения эффекта пульсации к контейнеру пианино -----
+        function applyPianoContainerPulseEffect() {
+            if (!usePianoWaveEffect) return;
+
+            pianoContainer.classList.remove('piano-pulse');
+            // Запускаем перерисовку, чтобы анимация сработала снова
+            void pianoContainer.offsetWidth;
+            pianoContainer.classList.add('piano-pulse');
+        }
+
+
+        // ----- Новый эффект: пульсация фона пианино (переименован в applyKeyGlowEffect) -----
+        function applyKeyGlowEffect(keyElement) { // Ранее называлась applyPianoVisualEffect
+            if (!usePianoWaveEffect) return; // Управляется тем же переключателем
+
+            // Получаем цвет клавиши
+            const activeKeyComputedStyle = window.getComputedStyle(keyElement);
+            const keyColor = activeKeyComputedStyle.backgroundColor;
+            
+            // Выбираем цвет для свечения, используя цвет клавиши или случайный из темы
+            let glowColor = keyColor || glowColors[currentThemeIndex][Math.floor(Math.random() * glowColors[currentThemeIndex].length)];
+            
+            keyElement.style.setProperty('--key-glow-color', glowColor);
+
+            keyElement.classList.remove('key-glow');
+            void keyElement.offsetWidth; // Запускаем перерисовку
+            keyElement.classList.add('key-glow');
+        }
+
+        // ----- Новый эффект: свечение дорожных линий -----
+        function applyRoadLineEffect() {
+            if (!useRoadGlowEffect) return;
+
+            roadLines.forEach(line => {
+                line.classList.remove('active-line');
+            });
+
+            const randomLine = roadLines[Math.floor(Math.random() * roadLines.length)];
+
+            const glowColor = glowColors[currentThemeIndex][Math.floor(Math.random() * glowColors[currentThemeIndex].length)];
+            randomLine.style.setProperty('--road-active-color', glowColor);
+
+            randomLine.classList.add('active-line');
+
+            setTimeout(() => {
+                randomLine.classList.remove('active-line');
+            }, 400); 
+        }
+
+
+        function applyTheme(themeIndex) {
+            document.body.classList.remove(...themeClasses);
+            document.body.classList.add(themeClasses[themeIndex]);
+            currentThemeIndex = themeIndex; 
+            
+            updateKeyLabels(); // Обновляем надписи на клавишах при смене темы
+
+            saveSettings(); 
+
+            applyRoadSettings(); 
+            resetVehiclePosition();
+            applyBodyBackground(); 
+        }
+
+        themeToggleButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (isDemoModeActive) {
+                stopDemoMode();
+            }
+            currentThemeIndex = (currentThemeIndex + 1) % themeClasses.length;
+            applyTheme(currentThemeIndex);
+        });
+
+        // --- Функция для применения настроек дороги и ландшафта ---
+        function applyRoadSettings() {
+            const pianoRect = pianoContainer.getBoundingClientRect();
+            
+            const roadHeight = parseInt(roadHeightSlider.value);
+            const roadWidthPercentage = parseInt(roadWidthSlider.value);
+            const roadTopOffset = parseInt(roadTopOffsetSlider.value);
+            const landscapeHeight = parseInt(landscapeHeightSlider.value);
+
+            carRoadContainer.style.height = `${roadHeight}px`;
+            carRoadContainer.style.width = `${pianoRect.width * (roadWidthPercentage / 100)}px`;
+            carRoadContainer.style.top = `${pianoRect.top + window.scrollY + roadTopOffset}px`;
+            carRoadContainer.style.left = `${pianoRect.left + (pianoRect.width / 2)}px`;
+            carRoadContainer.style.transform = `translateX(-50%)`;
+
+            landscapeContainer.style.height = `${landscapeHeight}px`;
+            landscapeContainer.style.top = `${carRoadContainer.offsetTop - landscapeContainer.offsetHeight}px`;
+            
+            updateLandscape(); 
+            updateDynamicPianoBackgroundPosition(); 
+
+            // Обновляем цифровое отображение
+            roadHeightValue.textContent = roadHeight;
+            roadWidthValue.textContent = roadWidthPercentage;
+            roadTopOffsetValue.textContent = roadTopOffset;
+            landscapeHeightValue.textContent = landscapeHeight;
+        }
+
+        // Функция для обновления позиции динамического фона пианино
+        function updateDynamicPianoBackgroundPosition() {
+            const pianoRect = pianoContainer.getBoundingClientRect();
+            dynamicPianoBackground.style.width = `${pianoRect.width}px`;
+            dynamicPianoBackground.style.height = `${pianoRect.height}px`;
+            dynamicPianoBackground.style.top = `${pianoRect.top + window.scrollY}px`;
+        }
+
+        // --- Функция для создания/обновления ландшафта ---
+        function updateLandscape() {
+            landscapeContainer.innerHTML = ''; 
+
+            const currentLandscape = landscapeThemes[currentThemeIndex];
+            landscapeContainer.style.width = `${carRoadContainer.offsetWidth * 2}px`;
+            
+            const buildingCount = 15; 
+            for (let i = 0; i < buildingCount; i++) {
+                const building = document.createElement('div');
+                building.classList.add('house', 'building-emoji');
+                // Убедимся, что currentLandscape.buildings не пуст
+                if (currentLandscape.buildings && currentLandscape.buildings.length > 0) {
+                    building.textContent = currentLandscape.buildings[Math.floor(Math.random() * currentLandscape.buildings.length)];
+                } else {
+                    building.textContent = '🏢'; // Запасной вариант
+                }
+                building.style.left = `${(i / buildingCount) * 100 * 2 + (Math.random() * 3)}%`;
+                building.style.bottom = `${Math.random() * 15}px`;
+                landscapeContainer.appendChild(building);
+            }
+
+            const treeCount = 15; 
+            for (let i = 0; i < treeCount; i++) {
+                const tree = document.createElement('div');
+                tree.classList.add('tree', 'tree-emoji'); 
+                // Убедимся, что currentLandscape.trees не пуст
+                if (currentLandscape.trees && currentLandscape.trees.length > 0) {
+                    tree.textContent = currentLandscape.trees[Math.floor(Math.random() * currentLandscape.trees.length)];
+                } else {
+                    tree.textContent = '🌳'; // Запасной вариант
+                }
+                tree.style.left = `${(i / treeCount) * 100 * 2 + (Math.random() * 3) + 2}%`;
+                tree.style.bottom = `${Math.random() * 20}px`;
+                landscapeContainer.appendChild(tree);
+            }
+
+            landscapeContainer.style.animation = 'none';
+            void landscapeContainer.offsetWidth; 
+            const animationDuration = landscapeContainer.offsetWidth / 50; 
+            landscapeContainer.style.animation = `landscape-move ${animationDuration}s linear infinite`;
+        }
+
+        // --- Функция для установки фона BODY ---
+        function applyBodyBackground() {
+            clearInterval(backgroundAnimationInterval); // Останавливаем предыдущую анимацию
+
+            if (useThemeBackground) {
+                const colors = animatedBackgroundColors[currentThemeIndex];
+                if (useDynamicBackground && colors && colors.length > 1) {
+                    let colorIndex = 0;
+                    backgroundAnimationInterval = setInterval(() => {
+                        colorIndex = (colorIndex + 1) % colors.length;
+                        const nextColorIndex = (colorIndex + 1) % colors.length;
+                        document.body.style.background = `linear-gradient(to bottom right, ${colors[colorIndex]}, ${colors[nextColorIndex]})`;
+                    }, 3000); 
+                    
+                    const nextColorIndex = (colorIndex + 1) % colors.length;
+                    document.body.style.background = `linear-gradient(to bottom right, ${colors[colorIndex]}, ${colors[nextColorIndex]})`;
+
+                } else {
+                    document.body.style.background = bodyBackgroundThemes[currentThemeIndex];
+                }
+            } else {
+                document.body.style.background = '#f0f0f0'; 
+            }
+        }
+
+        // ===== НОВЫЕ ФУНКЦИИ ДЛЯ СОХРАНЕНИЯ/ЗАГРУЗКИ НАСТРОЕК =====
+
+        function saveSettings() {
+            const settings = {
+                currentThemeIndex: currentThemeIndex,
+                emojiOriginMode: emojiOriginMode,
+                fullscreenChecked: fullscreenToggle.checked,
+                useThemeSounds: themeSoundToggle.checked,
+                useThemeBackground: themeBackgroundToggle.checked,
+                useDynamicBackground: dynamicBackgroundToggle.checked,
+                roadHeight: roadHeightSlider.value,
+                roadWidth: roadWidthSlider.value,
+                roadTopOffset: roadTopOffsetSlider.value,
+                landscapeHeight: landscapeHeightSlider.value,
+                usePianoWaveEffect: pianoWaveEffectToggle.checked, 
+                useRoadGlowEffect: roadGlowEffectToggle.checked 
+            };
+            try {
+                localStorage.setItem('pianoSettings', JSON.stringify(settings));
+                console.log('Настройки сохранены:', settings);
+            } catch (e) {
+                console.error('Ошибка при сохранении настроек в Local Storage:', e);
+            }
+        }
+
+        function loadSettings() {
+            try {
+                const savedSettings = localStorage.getItem('pianoSettings');
+                if (savedSettings) {
+                    const settings = JSON.parse(savedSettings);
+                    console.log('Настройки загружены:', settings);
+
+                    currentThemeIndex = settings.currentThemeIndex !== undefined ? settings.currentThemeIndex : 0;
+                    document.body.classList.remove(...themeClasses);
+                    document.body.classList.add(themeClasses[currentThemeIndex]);
+                    updateKeyLabels(); // Обновляем надписи после загрузки темы
+
+                    emojiOriginMode = settings.emojiOriginMode !== undefined ? settings.emojiOriginMode : 'key';
+                    document.querySelector(`input[name="emoji_origin"][value="${emojiOriginMode}"]`).checked = true;
+
+                    fullscreenToggle.checked = settings.fullscreenChecked !== undefined ? settings.fullscreenChecked : false;
+                    // Для полноэкранного режима, просто синхронизируем чекбокс.
+                    // Автоматический вызов requestFullscreen() при загрузке страницы обычно блокируется браузерами без явного пользовательского действия.
+
+                    useThemeSounds = settings.useThemeSounds !== undefined ? settings.useThemeSounds : true; 
+                    themeSoundToggle.checked = useThemeSounds;
+
+                    useThemeBackground = settings.useThemeBackground !== undefined ? settings.useThemeBackground : true;
+                    themeBackgroundToggle.checked = useThemeBackground;
+                    
+                    useDynamicBackground = settings.useDynamicBackground !== undefined ? settings.dynamicBackground : true;
+                    dynamicBackgroundToggle.checked = useDynamicBackground;
+
+                    usePianoWaveEffect = settings.usePianoWaveEffect !== undefined ? settings.usePianoWaveEffect : true;
+                    pianoWaveEffectToggle.checked = usePianoWaveEffect;
+
+                    useRoadGlowEffect = settings.useRoadGlowEffect !== undefined ? settings.useRoadGlowEffect : true;
+                    roadGlowEffectToggle.checked = useRoadGlowEffect;
+
+
+                    roadHeightSlider.value = settings.roadHeight !== undefined ? settings.roadHeight : 102;
+                    roadWidthSlider.value = settings.roadWidth !== undefined ? settings.roadWidth : 100;
+                    roadTopOffsetSlider.value = settings.roadTopOffset !== undefined ? settings.roadTopOffset : -100;
+                    landscapeHeightSlider.value = settings.landscapeHeight !== undefined ? settings.landscapeHeight : 200;
+
+                    applyRoadSettings();
+                    applyBodyBackground();
+                } else {
+                    console.log('Настройки в Local Storage не найдены. Применяются значения по умолчанию.');
+                    applyTheme(0); 
+                    applyRoadSettings();
+                    applyBodyBackground();
+                    document.querySelector(`input[name="emoji_origin"][value="key"]`).checked = true;
+                    fullscreenToggle.checked = false;
+                    themeSoundToggle.checked = true;
+                    themeBackgroundToggle.checked = true;
+                    dynamicBackgroundToggle.checked = true;
+                    pianoWaveEffectToggle.checked = true;
+                    roadGlowEffectToggle.checked = true;
+                    saveSettings(); // Сохраняем дефолтные настройки, чтобы они были при следующем запуске
+                }
+            } catch (e) {
+                console.error('Ошибка при загрузке настроек из Local Storage:', e);
+                localStorage.removeItem('pianoSettings'); 
+                applyTheme(0); 
+                applyRoadSettings();
+                applyBodyBackground();
+                document.querySelector(`input[name="emoji_origin"][value="key"]`).checked = true;
+                fullscreenToggle.checked = false;
+                themeSoundToggle.checked = true;
+                themeBackgroundToggle.checked = true;
+                dynamicBackgroundToggle.checked = true;
+                pianoWaveEffectToggle.checked = true;
+                roadGlowEffectToggle.checked = true;
+            }
+        }
+
+        // ===== ОБРАБОТЧИКИ СОБЫТИЙ ДЛЯ СОХРАНЕНИЯ НАСТРОЕК =====
+
+        window.addEventListener('load', () => {
+            loadSettings(); 
+            updateDynamicPianoBackgroundPosition(); 
+        });
+
+        window.addEventListener('resize', () => {
+            applyRoadSettings(); 
+            updateDynamicPianoBackgroundPosition(); 
+        });
+
+        roadHeightSlider.addEventListener('input', () => { applyRoadSettings(); saveSettings(); });
+        roadWidthSlider.addEventListener('input', () => { applyRoadSettings(); saveSettings(); }); 
+        roadTopOffsetSlider.addEventListener('input', () => { applyRoadSettings(); saveSettings(); });
+        landscapeHeightSlider.addEventListener('input', () => { applyRoadSettings(); saveSettings(); });
+
+        themeSoundToggle.addEventListener('change', () => {
+            useThemeSounds = themeSoundToggle.checked; 
+            saveSettings();
+        });
+
+        themeBackgroundToggle.addEventListener('change', () => {
+            useThemeBackground = themeBackgroundToggle.checked; 
+            applyBodyBackground(); 
+            saveSettings();
+        });
+
+        dynamicBackgroundToggle.addEventListener('change', () => {
+            useDynamicBackground = dynamicBackgroundToggle.checked; 
+            applyBodyBackground(); 
+            saveSettings();
+        });
+
+        pianoWaveEffectToggle.addEventListener('change', () => {
+            usePianoWaveEffect = pianoWaveEffectToggle.checked;
+            saveSettings();
+        });
+
+        roadGlowEffectToggle.addEventListener('change', () => {
+            useRoadGlowEffect = roadGlowEffectToggle.checked;
+            saveSettings();
+        });
+
+        emojiOriginRadios.forEach(radio => {
+            radio.addEventListener('change', (event) => {
+                emojiOriginMode = event.target.value;
+                saveSettings();
+            });
+        });
+
+        fullscreenToggle.addEventListener('change', () => {
+            if (fullscreenToggle.checked) {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen(); 
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.documentElement.msExitFullscreen) { // Исправлено на document.documentElement
+                    document.documentElement.msExitFullscreen(); 
+                }
+            }
+            saveSettings(); 
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            fullscreenToggle.checked = !!document.fullscreenElement;
+        });
+        document.addEventListener('mozfullscreenchange', () => {
+            fullscreenToggle.checked = !!document.mozFullScreenElement;
+        });
+        document.addEventListener('webkitfullscreenchange', () => {
+            fullscreenToggle.checked = !!document.webkitFullscreenElement;
+        });
+        document.addEventListener('msfullscreenchange', () => {
+            fullscreenToggle.checked = !!document.msFullscreenElement;
+        });
+
+        // ----- Логика демо-режима -----
+        function startDemoMode() {
+            if (isDemoModeActive) return;
+            isDemoModeActive = true;
+            demoModeButton.classList.add('active-demo');
+
+            if (settingsPanel.classList.contains('active')) {
+                settingsPanel.classList.remove('active');
+            }
+            
+            resetVehiclePosition();
+            currentMelodyIndex = Math.floor(Math.random() * melodies.length);
+            currentNoteIndex = 0;
+            playNextNoteInMelody();
+        }
+
+        function stopDemoMode() {
+            if (!isDemoModeActive) return;
+            isDemoModeActive = false;
+            clearInterval(backgroundAnimationInterval); 
+            clearTimeout(demoTimeoutId);
+            clearTimeout(vehicleVisibilityTimeout);
+            demoModeButton.classList.remove('active-demo');
+
+            const activeKey = document.querySelector('.key.pressed');
+            if (activeKey) {
+                activeKey.classList.remove('pressed');
+            }
+            const activeKeyKeyboard = document.querySelector('.key.active-key');
+            if (activeKeyKeyboard) {
+                activeKeyKeyboard.classList.remove('active-key');
+            }
+
+            roadLines.forEach(line => {
+                line.classList.remove('active-line');
+            });
+
+            vehicleEmoji.classList.remove('active-vehicle', 'disappearing');
+            vehicleEmoji.style.opacity = 0;
+        }
+
+        function playNextNoteInMelody() {
+            if (!isDemoModeActive) return;
+
+            const currentMelody = melodies[currentMelodyIndex];
+            const noteValue = currentMelody[currentNoteIndex];
+
+            let delay = noteDuration;
+
+            const prevActiveKey = document.querySelector('.key.pressed');
+            if (prevActiveKey) {
+                prevActiveKey.classList.remove('pressed');
+            }
+
+            if (noteValue === -1) {
+                delay = pauseDuration;
+                vehicleEmoji.classList.remove('active-vehicle', 'disappearing');
+                vehicleEmoji.style.opacity = 0;
+            } else {
+                const keyElement = pianoContainer.children[noteValue];
+                if (keyElement) {
+                    playSound(parseFloat(keyElement.dataset.frequency));
+                    playEmojiEffect(keyElement);
+                    moveVehicleStep();
+                    scheduleVehicleFadeOut();
+                    applyPianoContainerPulseEffect(); // НОВЫЙ ВЫЗОВ: пульсация контейнера
+                    applyKeyGlowEffect(keyElement);   // ИЗМЕНЕННЫЙ ВЫЗОВ: свечение клавиши
+                    applyRoadLineEffect();
+                    keyElement.classList.add('pressed');
+                }
+            }
+
+            currentNoteIndex++;
+            if (currentNoteIndex >= currentMelody.length) {
+                currentNoteIndex = 0;
+                currentMelodyIndex = (currentMelodyIndex + 1) % melodies.length;
+            }
+
+            demoTimeoutId = setTimeout(playNextNoteInMelody, delay);
+        }
+
+        demoModeButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            if (isDemoModeActive) {
+                stopDemoMode();
+            } else {
+                startDemoMode();
+            }
+        });
+
+        // ----- Логика настроек -----
+        settingsButton.addEventListener('click', (event) => {
+            event.preventDefault();
+            settingsPanel.classList.toggle('active');
+            if (settingsPanel.classList.contains('active') && isDemoModeActive) {
+                stopDemoMode();
+            }
+        });
+
+        // Закрываем панель настроек при клике вне неё и других кнопок
+        document.addEventListener('click', (event) => {
+            if (settingsPanel.classList.contains('active')) {
+                if (!settingsPanel.contains(event.target) && !settingsButton.contains(event.target) && !themeToggleButton.contains(event.target) && !randomSoundButton.contains(event.target) && !demoModeButton.contains(event.target)) {
+                    settingsPanel.classList.remove('active');
+                }
+            }
+        });
+
+        // Обработчик для нажатий на клавиши клавиатуры
+        document.addEventListener('keydown', (event) => {
+            if (isDemoModeActive) {
+                stopDemoMode();
+            }
+
+            const keyMap = {
+                'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, '[': 10, ']': 11
+            };
+            const keyIndex = keyMap[event.key.toLowerCase()];
+
+            if (keyIndex !== undefined && keyIndex >= 0 && keyIndex < numberOfKeys) {
+                const keyElement = pianoContainer.children[keyIndex];
+                if (keyElement && !keyElement.classList.contains('active-key')) {
+                    playSound(parseFloat(keyElement.dataset.frequency));
+                    playEmojiEffect(keyElement);
+                    moveVehicleStep();
+                    scheduleVehicleFadeOut();
+                    applyPianoContainerPulseEffect(); // НОВЫЙ ВЫЗОВ: пульсация контейнера
+                    applyKeyGlowEffect(keyElement);   // ИЗМЕНЕННЫЙ ВЫЗОВ: свечение клавиши
+                    applyRoadLineEffect(); 
+                    keyElement.classList.add('pressed');
+                    keyElement.classList.add('active-key');
+                }
+            }
+        });
+
+        // Сброс эффекта при отпускании клавиши
+        document.addEventListener('keyup', (event) => {
+            const keyMap = {
+                'q': 0, 'w': 1, 'e': 2, 'r': 3, 't': 4, 'y': 5, 'u': 6, 'i': 7, 'o': 8, 'p': 9, '[': 10, ']': 11
+            };
+            const keyIndex = keyMap[event.key.toLowerCase()];
+
+            if (keyIndex !== undefined && keyIndex >= 0 && keyIndex < numberOfKeys) {
+                const keyElement = pianoContainer.children[keyIndex];
+                if (keyElement) {
+                    keyElement.classList.remove('pressed');
+                    keyElement.classList.remove('active-key');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
