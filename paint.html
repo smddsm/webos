@@ -1,0 +1,1339 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рисовалка для малыша</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #F8F8F8;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        canvas {
+            border: 2px solid #E0E0E0;
+            touch-action: none;
+            flex-grow: 1;
+            transition: background-color 0.2s ease-out; /* Для эффекта вспышки при очистке/отмене */
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            background-color: #F0F0F0;
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .color-button, .brush-type-button, .background-selector-button { /* Добавлено .background-selector-button */
+            width: 35px;
+            height: 35px;
+            border: 2px solid #D0D0D0;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.1s ease-in-out, border-color 0.1s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.4em;
+            position: relative; /* Для эффекта всплеска */
+            overflow: hidden; /* Чтобы всплеск не выходил за границы кнопки */
+        }
+        .brush-type-button {
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .brush-type-button.rainbow-effect {
+            background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+            border: 2px solid #D0D0D0;
+        }
+
+        .color-button:hover, .brush-type-button:hover, .background-selector-button:hover { /* Добавлено .background-selector-button */
+            transform: scale(1.1);
+            border-color: #B0B0B0;
+        }
+        /* ВАЖНО: color-button.active только для рамки, не переопределяем цвет */
+        .color-button.active, .background-selector-button.active { /* Добавлено .background-selector-button */
+            border: 3px solid #66BB6A; /* Зеленая рамка */
+            transform: scale(1.1);
+            box-shadow: 0 0 8px rgba(102, 187, 106, 0.6);
+        }
+        /* Стиль для активных кнопок кисти */
+        .brush-type-button.active {
+            border: 3px solid #66BB6A;
+            transform: scale(1.1);
+            box-shadow: 0 0 8px rgba(102, 187, 106, 0.6);
+        }
+
+        /* НОВЫЕ ПРАВИЛА: Цвета для кнопок, заданные через классы */
+        .color-black { background-color: black; }
+        .color-gray { background-color: gray; }
+        .color-red { background-color: red; }
+        .color-orange { background-color: orange; }
+        .color-yellow { background-color: yellow; }
+        .color-limegreen { background-color: limegreen; }
+        .color-blue { background-color: blue; }
+        .color-indigo { background-color: indigo; }
+        .color-violet { background-color: violet; }
+        .color-hotpink { background-color: hotpink; }
+        .color-teal { background-color: teal; }
+        .color-brown { background-color: brown; }
+        .color-white { background-color: white; }
+        /* Дополнительные цвета */
+        .color-light-red { background-color: #FFCDD2; }
+        .color-light-orange { background-color: #FFE0B2; }
+        .color-light-yellow { background-color: #FFF9C4; }
+        .color-light-green { background-color: #DCEDC8; }
+        .color-light-blue { background-color: #BBDEFB; }
+        .color-light-purple { background-color: #E1BEE7; }
+        .color-light-pink { background-color: #F8BBD0; }
+        .color-light-cyan { background-color: #B2EBF2; }
+        .color-light-brown { background-color: #D7CCC8; }
+        .color-blue-grey { background-color: #CFD8DC; }
+
+
+        /* Эффект всплеска при смене цвета */
+        .color-splash {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: splash 0.4s ease-out forwards;
+        }
+
+        @keyframes splash {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(2.5);
+                opacity: 0;
+            }
+        }
+
+        input[type="range"] {
+            width: 150px;
+            margin-left: 15px;
+            cursor: grab;
+            -webkit-appearance: none;
+            height: 8px;
+            background: #E0E0E0;
+            border-radius: 5px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #66BB6A;
+            cursor: grab;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+            margin-top: -6px;
+        }
+        input[type="range"]::-webkit-slider-thumb:active {
+            cursor: grabbing;
+        }
+
+        label {
+            font-size: 1em;
+            margin-right: 8px;
+            white-space: nowrap;
+            color: #555;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            margin-right: 25px;
+        }
+        button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+            font-size: 1em;
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out; 
+            white-space: nowrap;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+
+        #clearCanvas {
+            background-color: #FF7043;
+            color: white;
+            transition: background-color 0.1s ease-out, transform 0.1s ease-in-out;
+            margin-left: 20px;
+        }
+        #clearCanvas:hover {
+            background-color: #FF5722;
+        }
+        #saveDrawing {
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.1s ease-out, transform 0.1s ease-in-out;
+        }
+        #saveDrawing:hover {
+            background-color: #43A047;
+        }
+        #undoLastAction {
+            background-color: #2196F3;
+            color: white;
+            transition: background-color 0.1s ease-out, transform 0.1s ease-in-out;
+        }
+        #undoLastAction:hover {
+            background-color: #1976D2;
+        }
+
+        .floating-controls-container-right {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .hidden-buttons-right {
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0;
+        }
+
+        .hidden-buttons-right.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        #mainFloatingButton {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #9C27B0;
+            color: white;
+            font-size: 1.5em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+            border: none;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        #mainFloatingButton.active {
+            animation: none;
+        }
+        #mainFloatingButton:hover {
+            background-color: #7B1FA2;
+            transform: scale(1.05);
+        }
+        #mainFloatingButton.active::before {
+            content: "✖";
+        }
+        #mainFloatingButton:not(.active)::before {
+            content: "☰";
+        }
+        
+        #toggleFullscreenButton {
+            background-color: #00BCD4;
+            color: white;
+            transition: background-color 0.1s ease-out, transform 0.1s ease-in-out;
+        }
+        #toggleFullscreenButton:hover {
+            background-color: #0097A7;
+        }
+
+        .floating-controls-container-left {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        #stampsFloatingButton {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #FFC107;
+            color: white;
+            font-size: 1.8em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+            border: none;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        #stampsFloatingButton.active {
+            animation: none;
+        }
+        #stampsFloatingButton:hover {
+            background-color: #FFA000;
+            transform: scale(1.05);
+        }
+        #stampsFloatingButton.active::before {
+            content: "✖";
+        }
+        #stampsFloatingButton:not(.active)::before {
+            content: "✨";
+        }
+
+        .stamp-themes-container {
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: opacity 0.3s ease-in-out;
+            opacity: 0;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .stamp-themes-container.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .stamp-theme-button {
+            background-color: #E0E0E0;
+            color: #333;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid #CCC;
+            font-size: 0.95em;
+            font-weight: normal;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            text-align: left;
+        }
+        .stamp-theme-button:hover {
+            background-color: #D0D0D0;
+            transform: translateX(2px);
+        }
+        .stamp-theme-button.active {
+            background-color: #66BB6A;
+            color: white;
+            border-color: #4CAF50;
+            transform: translateX(0);
+        }
+
+        .stamps-grid {
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 5px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-top: 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+        .stamps-grid.active {
+            display: grid;
+            opacity: 1;
+        }
+
+        .stamp-emoji-button {
+            width: 40px;
+            height: 40px;
+            background-color: #F0F0F0;
+            border: 1px solid #D0D0D0;
+            border-radius: 8px;
+            font-size: 1.8em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.1s ease-in-out, background-color 0.1s ease-in-out;
+        }
+        .stamp-emoji-button:hover {
+            transform: scale(1.1);
+            background-color: #E0E0E0;
+        }
+        .stamp-emoji-button.active {
+            border: 3px solid #66BB6A;
+            transform: scale(1.1);
+            box-shadow: 0 0 8px rgba(102, 187, 106, 0.6);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            }
+        }
+        
+        #toggleSoundButton {
+            background-color: #673AB7;
+            color: white;
+            font-size: 1.2em;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-left: 20px;
+            transition: background-color 0.1s ease-out, transform 0.1s ease-in-out;
+        }
+        #toggleSoundButton:hover {
+            background-color: #512DA8;
+        }
+        #toggleSoundButton::before {
+            content: "🔇";
+            margin-right: 5px;
+        }
+        #toggleSoundButton.active::before {
+            content: "🔊";
+        }
+
+        /* Стиль для кнопок выбора цвета фона */
+        .background-selector-button {
+            width: 35px;
+            height: 35px;
+            border: 2px solid #D0D0D0;
+            cursor: pointer;
+            border-radius: 50%; /* Сделаем круглыми как color-button */
+            box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.1s ease-in-out, border-color 0.1s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.4em;
+            position: relative;
+            overflow: hidden;
+        }
+        .background-selector-button:hover {
+            transform: scale(1.1);
+            border-color: #B0B0B0;
+        }
+        /* .background-selector-button.active уже определен выше вместе с .color-button.active */
+
+        /* Стили для кнопок загрузки/очистки фона */
+        #uploadBackgroundButton, #clearBackgroundButton {
+            background-color: #4CAF50; /* Зеленый для загрузки */
+            color: white;
+        }
+        #clearBackgroundButton {
+            background-color: #FF7043; /* Красный для очистки */
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <div class="control-group">
+            <label for="brushSize">Толщина:</label>
+            <input type="range" id="brushSize" min="1" max="50" value="25">
+        </div>
+
+        <div class="control-group">
+            <label>Цвет:</label>
+            <div class="color-button color-black" data-color="black"></div>
+            <div class="color-button color-gray" data-color="gray"></div>
+            <div class="color-button color-red" data-color="red"></div>
+            <div class="color-button color-orange" data-color="orange"></div>
+            <div class="color-button color-yellow" data-color="yellow"></div>
+            <div class="color-button color-limegreen" data-color="limegreen"></div>
+            <div class="color-button color-blue" data-color="blue"></div>
+            <div class="color-button color-indigo" data-color="indigo"></div>
+            <div class="color-button color-violet" data-color="violet"></div>
+            <div class="color-button color-hotpink" data-color="hotpink"></div>
+            <div class="color-button color-teal" data-color="teal"></div>
+            <div class="color-button color-brown" data-color="brown"></div>
+            <div class="color-button color-white" data-color="white"></div>
+        </div>
+
+        <div class="control-group">
+            <label>Доп. цвета:</label>
+            <div class="color-button color-light-red" data-color="#FFCDD2"></div>
+            <div class="color-button color-light-orange" data-color="#FFE0B2"></div>
+            <div class="color-button color-light-yellow" data-color="#FFF9C4"></div>
+            <div class="color-button color-light-green" data-color="#DCEDC8"></div>
+            <div class="color-button color-light-blue" data-color="#BBDEFB"></div>
+            <div class="color-button color-light-purple" data-color="#E1BEE7"></div>
+            <div class="color-button color-light-pink" data-color="#F8BBD0"></div>
+            <div class="color-button color-light-cyan" data-color="#B2EBF2"></div>
+            <div class="color-button color-light-brown" data-color="#D7CCC8"></div>
+            <div class="color-button color-blue-grey" data-color="#CFD8DC"></div>
+        </div>
+
+        <div class="control-group">
+            <label>Кисть:</label>
+            <div class="brush-type-button active" data-brush-type="round">⚪</div>
+            <div class="brush-type-button" data-brush-type="square">⬛</div>
+            <div class="brush-type-button" data-brush-type="star">⭐</div>
+            <div class="brush-type-button" data-brush-type="heart">❤️</div>
+            <div class="brush-type-button rainbow-effect" data-brush-type="rainbow">🌈</div>
+        </div>
+
+        <div class="control-group">
+            <label>Фон:</label>
+            <div class="background-selector-button color-white" data-color="white"></div> <div class="background-selector-button color-light-red" data-color="#FFCDD2"></div>
+            <div class="background-selector-button color-light-blue" data-color="#BBDEFB"></div>
+            <div class="background-selector-button color-light-green" data-color="#DCEDC8"></div>
+            <input type="file" id="backgroundInput" accept="image/*" style="display: none;">
+            <button id="uploadBackgroundButton">Фон (изобр.)</button>
+            <button id="clearBackgroundButton">Очистить фон</button>
+        </div>
+
+        <button id="clearCanvas">Очистить</button>
+        <button id="toggleSoundButton">Звук</button>
+    </div>
+
+    <canvas id="drawingCanvas"></canvas>
+
+    <div class="floating-controls-container-right">
+        <div class="hidden-buttons-right" id="actionButtons">
+            <button id="saveDrawing">Сохранить</button>
+            <button id="undoLastAction">Отменить</button>
+            <button id="toggleFullscreenButton">Полный экран</button>
+        </div>
+        <button id="mainFloatingButton"></button>
+    </div>
+
+    <div class="floating-controls-container-left">
+        <div class="stamp-themes-container" id="stampThemesContainer">
+            <button class="stamp-theme-button" data-theme="animals">Животные 🐾</button>
+            <button class="stamp-theme-button" data-theme="food">Еда 🍔</button>
+            <button class="stamp-theme-button" data-theme="nature">Природа 🌳</button>
+            <button class="stamp-theme-button" data-theme="faces">Лица 😊</button>
+            <button class="stamp-theme-button" data-theme="objects">Объекты 💡</button>
+            <button class="stamp-theme-button" data-theme="symbols">Символы ✨</button>
+            <button class="stamp-theme-button" data-theme="weather">Погода ☀️</button>
+            <button class="stamp-theme-button" data-theme="vehicles">Транспорт 🚗</button>
+            <button class="stamp-theme-button" data-theme="sports">Спорт ⚽</button>
+            <button class="stamp-theme-button" data-theme="music">Музыка 🎵</button>
+            <button class="stamp-theme-button" data-theme="misc">Разное ❓</button>
+        </div>
+        <div class="stamps-grid" id="stampsGrid">
+        </div>
+        <button id="stampsFloatingButton"></button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const brushSizeControl = document.getElementById('brushSize');
+        const colorButtons = document.querySelectorAll('.color-button');
+        const brushTypeButtons = document.querySelectorAll('.brush-type-button');
+        const clearCanvasButton = document.getElementById('clearCanvas');
+        const saveDrawingButton = document.getElementById('saveDrawing');
+        const undoLastActionButton = document.getElementById('undoLastAction');
+
+        const mainFloatingButton = document.getElementById('mainFloatingButton');
+        const actionButtonsContainer = document.getElementById('actionButtons'); 
+        const toggleFullscreenButton = document.getElementById('toggleFullscreenButton');
+
+        const stampsFloatingButton = document.getElementById('stampsFloatingButton');
+        const stampThemesContainer = document.getElementById('stampThemesContainer');
+        const stampsGrid = document.getElementById('stampsGrid');
+        const stampThemeButtons = document.querySelectorAll('.stamp-theme-button');
+
+        const toggleSoundButton = document.getElementById('toggleSoundButton');
+
+        // НОВЫЕ ЭЛЕМЕНТЫ ДЛЯ ФОНА
+        const backgroundColorButtons = document.querySelectorAll('.background-selector-button');
+        const uploadBackgroundButton = document.getElementById('uploadBackgroundButton');
+        const backgroundInput = document.getElementById('backgroundInput'); 
+        const clearBackgroundButton = document.getElementById('clearBackgroundButton');
+
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let brushColor = 'black';
+        let brushSize = 25; 
+        let currentBackground = { type: 'color', value: 'white' }; 
+        let currentBackgroundImage = null;
+        let currentBrushType = 'round';
+        let currentStamp = '';
+
+        let undoStack = [];
+        const MAX_UNDO_STATES = 10;
+
+        const rainbowColors = ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'];
+        let rainbowColorIndex = 0;
+
+        const activeSparkles = [];
+
+        const stampThemes = {
+            animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🦋', '🐢', '🐍', '🐠', '🐳', '🐬'],
+            food: ['🍎', '🍌', '🍓', '🍇', '🍉', '🍍', '🍕', '🍔', '🍟', '🍦', '🍩', '🍪', '🍰', '☕', '🥛', '🥤'],
+            nature: ['🌳', '🌲', '🌴', '🌵', '🌺', '🌸', '🌻', '🌼', '🌞', '🌛', '⭐', '🌈', '🌧️', '⚡', '🌊', '🔥'],
+            faces: ['😀', '😃', '😄', '😁', '😆', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😜', '🤪'],
+            objects: ['💡', '📱', '💻', '⌚', '📺', '📷', '📹', '🎤', '🎧', '🎸', '🎹', '🥁', '📖', '📚', '🖋️', '✂️', '🔑', '🔗', '🔒', '💡', '🎁', '🎈'],
+            symbols: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '🤎', '✅', '❌', '❓', '❕', '❗', '💯', '✨', '🔥', '🌟', '💫', '💥'],
+            weather: ['☀️', '☁️', '🌧️', '⛈️', '🌨️', '🌬️', '🌪️', '🌫️', '☔', '🌈', '❄️'],
+            vehicles: ['🚗', '🚕', '🚌', '🚓', '🚑', '🚒', '🚚', '🚢', '✈️', '🚀', '🚂', '🚲', '🛴', '🛵'],
+            sports: ['⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🎳', '⛳', '⛸️', '⛷️', '🏂', '🏃', '🏋️'],
+            music: ['🎵', '🎶', '🎼', '🎤', '🎧', '🎸', '🎹', '🥁', '🎷', '🎺', '🎻'],
+            misc: ['🚀', '🛸', '🤖', '👾', '👻', '🤡', '👽', '💀', '💩', '🎉', '🎊', '🎁', '🎂', '🎄', '🎃', '💎']
+        };
+
+        // --- Web Audio API для генерации звуков ---
+        let audioContext;
+        let masterGainNode;
+        let isSoundEnabled = true;
+
+        function initAudio() {
+            if (audioContext) return;
+            
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGainNode = audioContext.createGain();
+                masterGainNode.connect(audioContext.destination);
+                masterGainNode.gain.value = 1;
+
+                document.body.addEventListener('click', resumeAudioContext, { once: true });
+                document.body.addEventListener('touchstart', resumeAudioContext, { once: true });
+
+                console.log("Web Audio API инициализирован для генерации звуков.");
+
+            } catch (e) {
+                console.error("Web Audio API не поддерживается или произошла ошибка:", e);
+                toggleSoundButton.disabled = true;
+                toggleSoundButton.textContent = "Звук (недоступен)";
+            }
+        }
+
+        function resumeAudioContext() {
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume().then(() => {
+                    console.log('AudioContext возобновлен!');
+                    generateSound('unlock');
+                }).catch(e => console.error("Ошибка возобновления AudioContext:", e));
+            }
+        }
+
+        function generateSound(type) {
+            if (!isSoundEnabled || !audioContext || audioContext.state !== 'running') {
+                return;
+            }
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(masterGainNode);
+
+            const now = audioContext.currentTime;
+
+            switch (type) {
+                case 'drawStart':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(440, now);
+                    gainNode.gain.setValueAtTime(0.3, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.1);
+                    break;
+                case 'drawEnd':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(660, now);
+                    gainNode.gain.setValueAtTime(0.3, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.1);
+                    break;
+                case 'colorChange':
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(880, now);
+                    gainNode.gain.setValueAtTime(0.4, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.08);
+                    break;
+                case 'stamp':
+                    oscillator.type = 'triangle';
+                    oscillator.frequency.setValueAtTime(220, now);
+                    gainNode.gain.setValueAtTime(0.5, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.2);
+                    break;
+                case 'action':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(550, now);
+                    gainNode.gain.setValueAtTime(0.3, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.12);
+                    break;
+                case 'unlock':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(1, now);
+                    gainNode.gain.setValueAtTime(0.000001, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0000001, now + 0.01);
+                    oscillator.start(now);
+                    oscillator.stop(now + 0.01);
+                    break;
+            }
+
+            oscillator.onended = () => {
+                oscillator.disconnect();
+                gainNode.disconnect();
+            };
+        }
+
+        function playSound(soundType) {
+            generateSound(soundType);
+        }
+        // --- Конец Web Audio API для генерации звуков ---
+
+
+        function redrawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // НОВОЕ: Отрисовка фона
+            if (currentBackground.type === 'color') {
+                ctx.fillStyle = currentBackground.value;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else if (currentBackground.type === 'image' && currentBackgroundImage && currentBackgroundImage.complete) {
+                // Масштабирование изображения под размер холста
+                ctx.drawImage(currentBackgroundImage, 0, 0, canvas.width, canvas.height);
+            } else {
+                // Если нет фона или он очищен, рисуем белый
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            if (undoStack.length > 0) {
+                const lastState = undoStack[undoStack.length - 1];
+                ctx.putImageData(lastState, 0, 0);
+            }
+        }
+
+        function applyInitialSettings() {
+            brushSizeControl.value = brushSize; 
+
+            // Активируем первый цвет (черный)
+            document.querySelector('.color-button.color-black').classList.add('active'); 
+
+            document.querySelector('.brush-type-button[data-brush-type="round"]').classList.add('active');
+            toggleSoundButton.classList.add('active');
+
+            // НОВОЕ: Устанавливаем текущий фон на белый и активируем соответствующую кнопку
+            currentBackground = { type: 'color', value: 'white' };
+            currentBackgroundImage = null;
+            document.querySelector('.background-selector-button.color-white').classList.add('active');
+
+
+            resizeCanvas();
+            saveCanvasState();
+            initAudio();
+            animate();
+        }
+
+        function saveCanvasState() {
+            if (undoStack.length >= MAX_UNDO_STATES) {
+                undoStack.shift();
+            }
+            undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        }
+
+        function restoreLastCanvasState() {
+            if (undoStack.length > 1) {
+                undoStack.pop();
+                redrawCanvas();
+                flashCanvas('#ffe0b2', 150);
+                playSound('action');
+            } else if (undoStack.length === 1) {
+                undoStack.pop();
+                // Если отменяем последнее действие до пустого холста,
+                // то нужно также восстановить начальный фон.
+                currentBackground = { type: 'color', value: 'white' };
+                currentBackgroundImage = null;
+                redrawCanvas(); // Чтобы отрисовать пустой холст с правильным фоном
+                saveCanvasState(); // Сохраняем это пустое состояние с фоном
+                flashCanvas('#ffe0b2', 150);
+                playSound('action');
+            }
+        }
+
+        function clearCanvas() {
+            // Сохраняем текущий фон
+            const tempBgType = currentBackground.type;
+            const tempBgValue = currentBackground.value;
+            const tempBgImage = currentBackgroundImage;
+
+            // Временно устанавливаем белый фон для очистки
+            currentBackground = { type: 'color', value: '#FFFFFF' };
+            currentBackgroundImage = null;
+            drawBackground(); // Отрисует белый фон, стирая все
+
+            // Восстанавливаем оригинальный фон (он будет под рисунком)
+            currentBackground = { type: tempBgType, value: tempBgValue };
+            currentBackgroundImage = tempBgImage;
+            
+            // Сбрасываем undoStack и сохраняем текущий фон как первое состояние
+            undoStack = [];
+            saveCanvasState(); // Сохраняем состояние с текущим фоном, но пустым рисунком
+            
+            flashCanvas('#ffcdd2', 200);
+            playSound('action');
+        }
+
+        // Обновленная функция drawBackground для учета фоновых изображений/цветов
+        function drawBackground() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Всегда очищаем полностью
+            
+            if (currentBackground.type === 'color') {
+                ctx.fillStyle = currentBackground.value;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else if (currentBackground.type === 'image' && currentBackgroundImage && currentBackgroundImage.complete) {
+                ctx.drawImage(currentBackgroundImage, 0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function resizeCanvas() {
+            const controlsHeight = document.querySelector('.controls').offsetHeight;
+            canvas.width = window.innerWidth * 0.9;
+            canvas.height = window.innerHeight - controlsHeight - 20;
+
+            redrawCanvas(); // Важно перерисовать после изменения размера, чтобы фон масштабировался
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = brushColor;
+        ctx.lineWidth = brushSize;
+
+        function startDrawing(e) {
+            isDrawing = true;
+            [lastX, lastY] = getCoordinates(e);
+            drawShape(lastX, lastY);
+            if (currentBrushType !== 'stamp') {
+                playSound('drawStart');
+            }
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+
+            const [currentX, currentY] = getCoordinates(e);
+
+            if (currentBrushType === 'stamp') {
+                if (currentStamp) {
+                    drawShape(currentX, currentY);
+                    isDrawing = false;
+                    saveCanvasState();
+                    playSound('stamp');
+                }
+            } else {
+                const distance = Math.sqrt(Math.pow(currentX - lastX, 2) + Math.pow(currentY - lastY, 2));
+                const angle = Math.atan2(currentY - lastY, currentX - lastX);
+
+                const stepInterval = brushSize < 10 ? brushSize / 2 : brushSize * 0.7;
+
+
+                for (let i = 0; i < distance; i += stepInterval) {
+                    const x = lastX + Math.cos(angle) * i;
+                    const y = lastY + Math.sin(angle) * i;
+                    drawShape(x, y);
+
+                    if (currentBrushType === 'star' || currentBrushType === 'heart') {
+                        for (let j = 0; j < 3; j++) {
+                            activeSparkles.push({
+                                x: x + (Math.random() - 0.5) * brushSize * 1.5,
+                                y: y + (Math.random() - 0.5) * brushSize * 1.5,
+                                size: Math.random() * (brushSize / 4) + 1,
+                                color: ctx.fillStyle,
+                                opacity: 1,
+                                decayRate: Math.random() * 0.05 + 0.01,
+                                velocityX: (Math.random() - 0.5) * 2,
+                                velocityY: (Math.random() - 0.5) * 2
+                            });
+                        }
+                    }
+
+                    if (currentBrushType === 'rainbow') {
+                        rainbowColorIndex = (rainbowColorIndex + 1) % rainbowColors.length;
+                        const rainbowCol = rainbowColors[rainbowColorIndex];
+                        ctx.fillStyle = rainbowCol;
+                        ctx.strokeStyle = rainbowCol;
+                        ctx.shadowBlur = brushSize;
+                        ctx.shadowColor = rainbowCol;
+                    } else {
+                        ctx.shadowBlur = 0;
+                    }
+                }
+            }
+            [lastX, lastY] = [currentX, currentY];
+        }
+
+        function stopDrawing() {
+            if (isDrawing) {
+                isDrawing = false;
+                saveCanvasState();
+                ctx.shadowBlur = 0;
+                if (currentBrushType !== 'stamp') {
+                    playSound('drawEnd');
+                }
+            }
+        }
+
+        function getCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            const computedStyle = getComputedStyle(canvas);
+            const borderWidth = parseFloat(computedStyle.borderLeftWidth);
+
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            return [
+                clientX - rect.left - borderWidth,
+                clientY - rect.top - borderWidth
+            ];
+        }
+
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchcancel', stopDrawing);
+
+        brushSizeControl.addEventListener('input', (e) => {
+            brushSize = parseInt(e.target.value);
+            if (currentBrushType === 'stamp') {
+                ctx.font = `${brushSize * 2}px Arial`;
+            }
+        });
+
+        colorButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                colorButtons.forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                brushColor = e.target.dataset.color;
+                
+                if (currentBrushType === 'stamp') {
+                    currentBrushType = 'round';
+                    document.querySelector('.brush-type-button[data-brush-type="round"]').classList.add('active');
+                    document.querySelectorAll('.stamp-emoji-button').forEach(btn => btn.classList.remove('active'));
+                    currentStamp = '';
+                }
+                ctx.fillStyle = brushColor;
+                ctx.strokeStyle = brushColor;
+                ctx.shadowBlur = 0;
+
+                const splash = document.createElement('div');
+                splash.classList.add('color-splash');
+                splash.style.width = splash.style.height = `${e.target.offsetWidth}px`;
+                splash.style.left = `0px`;
+                splash.style.top = `0px`;
+                e.target.appendChild(splash);
+                splash.addEventListener('animationend', () => {
+                    splash.remove();
+                });
+                playSound('colorChange');
+            });
+        });
+
+        function drawShape(x, y) {
+            ctx.beginPath();
+
+            switch (currentBrushType) {
+                case 'round':
+                    ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                case 'square':
+                    ctx.fillRect(x - brushSize / 2, y - brushSize / 2, brushSize, brushSize);
+                    break;
+                case 'star':
+                    drawStar(x, y, brushSize / 2 * 1.5, 5, 0.5);
+                    ctx.fill();
+                    break;
+                case 'heart':
+                    drawHeart(x, y, brushSize / 2 * 1.5);
+                    ctx.fill();
+                    break;
+                case 'rainbow':
+                    ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+                case 'stamp':
+                    if (currentStamp) {
+                        ctx.font = `${brushSize * 2}px Arial`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(currentStamp, x, y);
+                    }
+                    break;
+                default:
+                    ctx.arc(x, y, brushSize / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    break;
+            }
+        }
+
+        function animateSparkles() {
+            for (let i = activeSparkles.length - 1; i >= 0; i--) {
+                const sparkle = activeSparkles[i];
+
+                sparkle.x += sparkle.velocityX;
+                sparkle.y += sparkle.velocityY;
+                sparkle.opacity -= sparkle.decayRate;
+                sparkle.size *= 0.95;
+
+                if (sparkle.opacity <= 0 || sparkle.size <= 0.5) {
+                    activeSparkles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.fillStyle = `rgba(${parseInt(sparkle.color.slice(1, 3), 16)}, ${parseInt(sparkle.color.slice(3, 5), 16)}, ${parseInt(sparkle.color.slice(5, 7), 16)}, ${sparkle.opacity})`;
+                ctx.beginPath();
+                ctx.arc(sparkle.x, sparkle.y, sparkle.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function animate() {
+            animateSparkles(); 
+            requestAnimationFrame(animate);
+        }
+
+
+        function drawStar(cx, cy, outerRadius, points, innerRatio) {
+            let innerRadius = outerRadius * innerRatio;
+            let rot = Math.PI / 2 * 3;
+            let x = cx;
+            let y = cy;
+            let step = Math.PI / points;
+
+            ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < points; i++) {
+                x = cx + Math.cos(rot) * outerRadius;
+                y = cy + Math.sin(rot) * outerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+
+                x = cx + Math.cos(rot) * innerRadius;
+                y = cy + Math.sin(rot) * innerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+            }
+            ctx.closePath();
+        }
+
+        function drawHeart(x, y, size) {
+            ctx.moveTo(x, y + size / 4);
+            ctx.bezierCurveTo(x + size / 2, y - size / 2, x + size, y, x, y + size);
+            ctx.bezierCurveTo(x - size, y, x - size / 2, y - size / 2, x, y + size / 4);
+            ctx.closePath();
+        }
+
+        brushTypeButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                brushTypeButtons.forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                currentBrushType = e.target.dataset.brushType;
+
+                if (currentBrushType === 'rainbow') {
+                    rainbowColorIndex = 0;
+                    ctx.shadowBlur = brushSize; 
+                    ctx.shadowColor = rainbowColors[rainbowColorIndex]; 
+                } else if (currentBrushType === 'star' || currentBrushType === 'heart') {
+                    ctx.shadowBlur = brushSize / 2;
+                    ctx.shadowColor = brushColor;
+                } else {
+                    ctx.shadowBlur = 0;
+                    ctx.fillStyle = brushColor;
+                    ctx.strokeStyle = brushColor;
+                }
+
+                if (currentBrushType !== 'stamp') {
+                    currentStamp = '';
+                    const activeEmojiButton = document.querySelector('.stamp-emoji-button.active');
+                    if (activeEmojiButton) {
+                        activeEmojiButton.classList.remove('active');
+                    }
+                }
+            });
+        });
+
+        clearCanvasButton.addEventListener('click', () => {
+            clearCanvas();
+            tempChangeButtonColor(clearCanvasButton, '#FFAB91', '#FF7043', 150);
+        });
+        undoLastActionButton.addEventListener('click', () => {
+            restoreLastCanvasState();
+            tempChangeButtonColor(undoLastActionButton, '#90CAF9', '#2196F3', 150);
+        });
+        saveDrawingButton.addEventListener('click', () => {
+            const dataURL = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = 'risunok_malysha.png';
+            link.href = dataURL;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            tempChangeButtonColor(saveDrawingButton, '#81C784', '#4CAF50', 150);
+            playSound('action');
+        });
+
+        function flashCanvas(color, duration) {
+            const originalBg = canvas.style.backgroundColor;
+            canvas.style.backgroundColor = color;
+            setTimeout(() => {
+                canvas.style.backgroundColor = originalBg;
+            }, duration);
+        }
+
+        function tempChangeButtonColor(button, tempColor, originalColor, duration) {
+            button.style.backgroundColor = tempColor;
+            setTimeout(() => {
+                button.style.backgroundColor = originalColor;
+            }, duration);
+        }
+
+        mainFloatingButton.addEventListener('click', () => {
+            actionButtonsContainer.classList.toggle('active');
+            mainFloatingButton.classList.toggle('active');
+            if (stampThemesContainer.classList.contains('active')) {
+                stampThemesContainer.classList.remove('active');
+                stampsGrid.classList.remove('active');
+                stampsGrid.innerHTML = '';
+                stampsFloatingButton.classList.remove('active');
+                const activeThemeButton = document.querySelector('.stamp-theme-button.active');
+                if (activeThemeButton) {
+                    activeThemeButton.classList.remove('active');
+                }
+            }
+        });
+
+        toggleFullscreenButton.addEventListener('click', () => {
+            toggleFullscreen();
+            actionButtonsContainer.classList.remove('active');
+            mainFloatingButton.classList.remove('active');
+            playSound('action');
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                actionButtonsContainer.classList.remove('active');
+                mainFloatingButton.classList.remove('active');
+            }
+            resizeCanvas();
+        });
+        document.addEventListener('mozfullscreenchange', () => {
+            if (!document.mozFullScreenElement) {
+                actionButtonsContainer.classList.remove('active');
+                mainFloatingButton.classList.remove('active');
+            }
+            resizeCanvas();
+        });
+        document.addEventListener('webkitfullscreenchange', () => {
+            if (!document.webkitFullscreenElement) {
+                actionButtonsContainer.classList.remove('active');
+                mainFloatingButton.classList.remove('active');
+            }
+            resizeCanvas();
+        });
+        document.addEventListener('msfullscreenchange', () => {
+            if (!document.msFullscreenElement) {
+                actionButtonsContainer.classList.remove('active');
+                mainFloatingButton.classList.remove('active');
+            }
+            resizeCanvas();
+        });
+
+        function toggleFullscreen() {
+            const doc = document.documentElement;
+
+            if (!document.fullscreenElement) {
+                if (doc.requestFullscreen) {
+                    doc.requestFullscreen();
+                } else if (doc.mozRequestFullScreen) {
+                    doc.mozRequestFullScreen();
+                } else if (doc.webkitRequestFullscreen) {
+                    doc.webkitRequestFullscreen();
+                } else if (doc.msRequestFullscreen) {
+                    doc.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        }
+
+        stampsFloatingButton.addEventListener('click', () => {
+            stampThemesContainer.classList.toggle('active');
+            stampsFloatingButton.classList.toggle('active');
+            stampsGrid.classList.remove('active');
+            stampsGrid.innerHTML = '';
+
+            if (actionButtonsContainer.classList.contains('active')) {
+                actionButtonsContainer.classList.remove('active');
+                mainFloatingButton.classList.remove('active');
+            }
+        });
+
+        stampThemeButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                stampThemeButtons.forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                const theme = e.target.dataset.theme;
+                loadStampsForTheme(theme);
+                stampsGrid.classList.add('active');
+            });
+        });
+
+        function loadStampsForTheme(theme) {
+            stampsGrid.innerHTML = '';
+            const emojis = stampThemes[theme];
+            emojis.forEach(emoji => {
+                const button = document.createElement('button');
+                button.classList.add('stamp-emoji-button');
+                button.textContent = emoji;
+                button.dataset.emoji = emoji;
+                button.addEventListener('click', (e) => {
+                    document.querySelectorAll('.stamp-emoji-button').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+
+                    currentStamp = e.target.dataset.emoji;
+                    currentBrushType = 'stamp';
+
+                    brushTypeButtons.forEach(btn => btn.classList.remove('active'));
+
+                    ctx.fillStyle = 'black';
+                    ctx.strokeStyle = 'black';
+                    ctx.shadowBlur = 0; // Сброс тени при выборе штампа
+
+                    stampThemesContainer.classList.remove('active');
+                    stampsGrid.classList.remove('active');
+                    stampsFloatingButton.classList.remove('active');
+                });
+                stampsGrid.appendChild(button);
+            });
+        }
+
+        // --- НОВАЯ ЛОГИКА ДЛЯ ФОНА ---
+        backgroundColorButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                backgroundColorButtons.forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                currentBackground = { type: 'color', value: e.target.dataset.color };
+                currentBackgroundImage = null; // Сбрасываем изображение
+                redrawCanvas(); // Перерисовываем холст с новым фоном
+                saveCanvasState(); // Сохраняем состояние с новым фоном
+            });
+        });
+
+        uploadBackgroundButton.addEventListener('click', () => {
+            backgroundInput.click(); // Имитируем клик по скрытому input type="file"
+        });
+
+        backgroundInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        currentBackground = { type: 'image' };
+                        currentBackgroundImage = img;
+                        redrawCanvas(); // Перерисовываем холст с новым изображением
+                        saveCanvasState(); // Сохраняем состояние с новым изображением
+                        // Сбрасываем активные кнопки цвета фона, т.к. теперь активен фон-изображение
+                        backgroundColorButtons.forEach(btn => btn.classList.remove('active'));
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        clearBackgroundButton.addEventListener('click', () => {
+            currentBackground = { type: 'color', value: 'white' }; // Возвращаем белый фон
+            currentBackgroundImage = null;
+            redrawCanvas(); // Перерисовываем холст с белым фоном
+            saveCanvasState(); // Сохраняем состояние
+            // Активируем кнопку белого фона
+            backgroundColorButtons.forEach(btn => btn.classList.remove('active'));
+            document.querySelector('.background-selector-button.color-white').classList.add('active');
+        });
+        // --- КОНЕЦ НОВОЙ ЛОГИКИ ДЛЯ ФОНА ---
+
+
+        toggleSoundButton.addEventListener('click', () => {
+            isSoundEnabled = !isSoundEnabled;
+            toggleSoundButton.classList.toggle('active', isSoundEnabled);
+            if (audioContext && masterGainNode) {
+                masterGainNode.gain.value = isSoundEnabled ? 1 : 0;
+                if (isSoundEnabled && audioContext.state === 'suspended') {
+                    resumeAudioContext();
+                }
+            }
+            console.log("Звук: " + (isSoundEnabled ? "Включен" : "Отключен"));
+        });
+
+        window.onload = applyInitialSettings;
+    </script>
+</body>
+</html>
