@@ -1,0 +1,1846 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>КиберОС 3.0</title>
+<style>
+:root {
+  --a:#00e5ff; --a2:#ff006e; --a3:#7c4dff;
+  --wbg:rgba(10,15,35,0.88); --wtb:rgba(8,12,40,0.97);
+  --tbg:rgba(5,8,22,0.98); --tx:#ddeeff; --tx2:#6688aa;
+  --bd:rgba(0,229,255,0.2); --bda:rgba(0,229,255,0.7);
+  --sh:0 16px 60px rgba(0,0,0,0.7); --r:12px; --th:52px; --zoom:1;
+  --font:'Segoe UI',system-ui,sans-serif;
+}
+.tl{--a:#0055ff;--a2:#ff2255;--wbg:rgba(238,244,255,0.93);--wtb:rgba(220,232,255,0.98);--tbg:rgba(210,222,248,0.99);--tx:#0f1f44;--tx2:#4466aa;--bd:rgba(0,85,255,0.18);--bda:rgba(0,85,255,0.65);}
+.td{--a:#a855f7;--a2:#f43f5e;--wbg:rgba(18,14,32,0.93);--wtb:rgba(22,16,42,0.98);--tbg:rgba(14,10,26,0.99);--tx:#e4d8ff;--tx2:#8877bb;--bd:rgba(168,85,247,0.22);--bda:rgba(168,85,247,0.75);}
+.tn{--a:#00ff41;--a2:#ff00ff;--wbg:rgba(0,6,1,0.93);--wtb:rgba(0,8,1,0.98);--tbg:rgba(0,4,0,0.99);--tx:#00ff41;--tx2:#00bb30;--bd:rgba(0,255,65,0.25);--bda:rgba(0,255,65,0.85);}
+.tr{--a:#ff6fa8;--a2:#c77dff;--wbg:rgba(255,242,250,0.93);--wtb:rgba(255,228,244,0.98);--tbg:rgba(255,218,238,0.99);--tx:#52123a;--tx2:#cc88aa;--bd:rgba(255,111,168,0.28);--bda:rgba(255,111,168,0.8);}
+.ta{--a:#ffb300;--a2:#ff6d00;--wbg:rgba(18,10,0,0.93);--wtb:rgba(26,14,0,0.98);--tbg:rgba(14,8,0,0.99);--tx:#fff3cc;--tx2:#aa8833;--bd:rgba(255,179,0,0.24);--bda:rgba(255,179,0,0.78);}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100vw;height:100vh;overflow:hidden;font-family:var(--font);font-size:calc(14px * var(--zoom));color:var(--tx);}
+::selection{background:var(--a);color:#000;}
+
+/* ── DESKTOP ── */
+#desktop{
+  position:fixed;inset:0;bottom:var(--th);
+  overflow:hidden;
+}
+#wp-canvas{position:absolute;top:0;left:0;z-index:0;pointer-events:none;display:block;}
+#wp-static{position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(135deg,#020820,#05162e 40%,#020c1f);background-size:cover;background-position:center;transition:background 0.5s;}
+#wp-overlay{position:absolute;inset:0;z-index:2;pointer-events:none;}
+/* Виджеты и иконки — просто абсолютные дочерние элементы #desktop с правильным z-index */
+
+/* ── ИКОНКИ ── */
+#icons-grid{position:absolute;inset:0;z-index:10;padding:16px;display:flex;flex-direction:column;flex-wrap:wrap;align-content:flex-start;gap:8px;pointer-events:none;}
+.dicon{display:flex;flex-direction:column;align-items:center;gap:5px;width:calc(74px * var(--zoom));padding:8px 4px;border-radius:10px;cursor:pointer;transition:background .15s,transform .1s;position:relative;pointer-events:all;}
+.dicon:hover{background:rgba(255,255,255,0.1);transform:scale(1.06);}
+.dicon-em{font-size:calc(38px * var(--zoom));line-height:1;filter:drop-shadow(0 3px 10px rgba(0,229,255,0.4));transition:filter .2s;}
+.dicon:hover .dicon-em{filter:drop-shadow(0 5px 18px var(--a));}
+.dicon-lbl{font-size:calc(11px * var(--zoom));color:var(--tx);text-align:center;text-shadow:0 1px 6px rgba(0,0,0,0.9);line-height:1.3;word-break:break-word;max-width:100%;}
+
+/* ── ВИДЖЕТЫ ── */
+.wgt{position:absolute;z-index:20;background:var(--wbg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;transition:border-color .2s;}
+.wgt:hover{border-color:var(--bda);}
+.wgt-hdr{display:flex;align-items:center;justify-content:space-between;padding:7px 11px;border-bottom:1px solid var(--bd);cursor:move;font-size:calc(10px * var(--zoom));font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--a);}
+.wgt-x{background:none;border:none;color:var(--tx2);cursor:pointer;font-size:15px;padding:0 2px;line-height:1;transition:color .15s;}
+.wgt-x:hover{color:var(--a2);}
+.wgt-body{padding:10px 12px;}
+.w-clk-t{font-size:calc(34px * var(--zoom));font-weight:900;color:var(--a);letter-spacing:2px;font-variant-numeric:tabular-nums;}
+.w-clk-d{font-size:calc(11px * var(--zoom));color:var(--tx2);margin-top:3px;}
+.w-perf-row{display:flex;align-items:center;gap:7px;font-size:calc(10px * var(--zoom));color:var(--tx2);margin-bottom:6px;}
+.w-perf-bg{flex:1;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
+.w-perf-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--a),var(--a3));transition:width 1s;}
+.w-perf-v{width:30px;text-align:right;color:var(--tx);font-weight:600;font-size:calc(10px * var(--zoom));}
+.w-note-ta{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-family:var(--font);font-size:calc(12px * var(--zoom));padding:7px;resize:none;outline:none;line-height:1.6;}
+.w-note-ta:focus{border-color:var(--bda);}
+
+/* ── ОКНА ── */
+.win{position:absolute;z-index:100;min-width:300px;min-height:160px;border-radius:var(--r);border:1px solid var(--bd);background:var(--wbg);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:var(--sh);display:flex;flex-direction:column;overflow:hidden;transition:box-shadow .2s,border-color .2s;}
+.win.wactive{border-color:var(--bda);box-shadow:var(--sh),0 0 40px rgba(0,229,255,0.12);}
+.win.wmax{top:0!important;left:0!important;width:100%!important;height:100%!important;border-radius:0;}
+.win.wmin{display:none;}
+.wtb{display:flex;align-items:center;padding:0 10px;height:calc(38px * var(--zoom));background:var(--wtb);cursor:move;border-bottom:1px solid var(--bd);flex-shrink:0;gap:8px;-webkit-app-region:drag;}
+.wtb-ico{font-size:16px;flex-shrink:0;}
+.wtb-ttl{flex:1;font-size:calc(13px * var(--zoom));font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wbtns{display:flex;gap:7px;flex-shrink:0;}
+.wb{width:calc(22px * var(--zoom));height:calc(22px * var(--zoom));border-radius:50%;border:none;cursor:pointer;transition:transform .1s,filter .15s;}
+.wb:hover{transform:scale(1.2);filter:brightness(1.2);}
+.wb.wmn{background:#ffbd44;}
+.wb.wmx{background:#00ca4e;}
+.wb.wcl{background:#ff6058;}
+.wbody{flex:1;overflow:auto;position:relative;}
+.wrsz{position:absolute;bottom:0;right:0;width:16px;height:16px;cursor:se-resize;background:linear-gradient(135deg,transparent 50%,var(--a) 50%);opacity:0.4;border-radius:0 0 var(--r) 0;z-index:9;}
+
+/* ── TASKBAR ── */
+#taskbar{position:fixed;bottom:0;left:0;right:0;height:var(--th);background:var(--tbg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--bd);display:flex;align-items:center;padding:0 10px;gap:6px;z-index:9999;}
+#start-btn{display:flex;align-items:center;gap:7px;padding:6px 14px;background:linear-gradient(135deg,var(--a),var(--a3));border:none;border-radius:8px;color:#000;font-weight:800;font-size:calc(13px * var(--zoom));cursor:pointer;transition:transform .1s,box-shadow .2s;flex-shrink:0;}
+#start-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,229,255,0.4);}
+#tb-apps{display:flex;gap:4px;flex:1;overflow:hidden;}
+.tbi{display:flex;align-items:center;gap:5px;padding:4px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--bd);border-radius:7px;cursor:pointer;font-size:calc(11px * var(--zoom));color:var(--tx2);transition:all .15s;max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+.tbi:hover,.tbi.tba{background:rgba(0,229,255,0.1);border-color:var(--a);color:var(--tx);}
+#systray{display:flex;align-items:center;gap:8px;flex-shrink:0;padding-left:10px;border-left:1px solid var(--bd);}
+#clock{font-size:calc(12px * var(--zoom));font-weight:700;color:var(--tx);letter-spacing:.8px;text-align:center;line-height:1.4;font-variant-numeric:tabular-nums;}
+.tray-btn{background:none;border:none;cursor:pointer;color:var(--tx2);padding:5px;border-radius:6px;font-size:18px;transition:all .15s;line-height:1;}
+.tray-btn:hover{background:rgba(255,255,255,0.08);color:var(--a);}
+
+/* ── МЕНЮ ПУСК ── */
+#smenu{position:fixed;bottom:calc(var(--th) + 8px);left:10px;width:320px;background:var(--wbg);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--bda);border-radius:14px;padding:14px;z-index:99999;display:none;box-shadow:0 -8px 50px rgba(0,0,0,0.6);}
+#smenu.sopen{display:block;animation:smUp .18s ease;}
+@keyframes smUp{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+#sm-search{width:100%;padding:8px 12px;background:rgba(255,255,255,0.07);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font-size:calc(13px * var(--zoom));outline:none;margin-bottom:12px;transition:border-color .15s;}
+#sm-search:focus{border-color:var(--bda);}
+#sm-search::placeholder{color:var(--tx2);}
+.sm-lbl{font-size:10px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:var(--a);margin-bottom:8px;}
+#sm-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+.sm-btn{display:flex;align-items:center;gap:9px;padding:9px 11px;background:rgba(255,255,255,0.05);border:1px solid var(--bd);border-radius:9px;cursor:pointer;color:var(--tx);font-size:calc(12px * var(--zoom));font-weight:500;transition:all .14s;width:100%;}
+.sm-btn:hover{background:rgba(0,229,255,0.09);border-color:var(--a);transform:scale(1.02);}
+.sm-btn-ico{font-size:20px;}
+.sm-footer{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--bd);}
+.sm-pwr{display:flex;align-items:center;gap:6px;padding:5px 12px;background:rgba(255,96,88,0.12);border:1px solid rgba(255,96,88,0.35);border-radius:7px;cursor:pointer;color:#ff6058;font-size:calc(12px * var(--zoom));font-weight:700;transition:all .15s;}
+.sm-pwr:hover{background:rgba(255,96,88,0.22);}
+
+/* ── КОНТЕКСТ ── */
+#ctx{position:fixed;background:var(--wbg);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--bda);border-radius:10px;padding:5px;z-index:999999;display:none;min-width:160px;box-shadow:0 8px 36px rgba(0,0,0,0.6);}
+#ctx.copen{display:block;animation:ca .12s ease;}
+@keyframes ca{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+.ci{display:flex;align-items:center;gap:9px;padding:7px 11px;border-radius:7px;cursor:pointer;font-size:calc(12px * var(--zoom));color:var(--tx);transition:background .1s;}
+.ci:hover{background:rgba(0,229,255,0.11);color:var(--a);}
+.ci.cdanger:hover{background:rgba(255,96,88,0.11);color:#ff6058;}
+.csep{height:1px;background:var(--bd);margin:3px 8px;}
+
+/* ── УВЕДОМЛЕНИЯ ── */
+#notifs{position:fixed;bottom:calc(var(--th) + 8px);right:10px;width:280px;z-index:99998;display:flex;flex-direction:column;gap:7px;}
+.notif{background:var(--wbg);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--bda);border-radius:11px;padding:11px 13px;animation:nIn .22s ease;box-shadow:0 4px 28px rgba(0,0,0,0.5);cursor:pointer;}
+@keyframes nIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+.notif-t{font-size:calc(11px * var(--zoom));font-weight:700;color:var(--a);margin-bottom:3px;}
+.notif-b{font-size:calc(11px * var(--zoom));color:var(--tx2);line-height:1.4;}
+
+/* ── КОНТЕНТ ПРИЛОЖЕНИЙ ── */
+.app-pad{padding:16px;}
+.sec-title{font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--a);margin-bottom:10px;}
+.row-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.tab-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--bd);background:rgba(255,255,255,0.05);cursor:pointer;font-size:calc(11px * var(--zoom));color:var(--tx2);transition:all .14s;}
+.tab-btn.tact{border-color:var(--a);color:var(--a);background:rgba(0,229,255,0.08);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.card{background:rgba(255,255,255,0.04);border:1px solid var(--bd);border-radius:10px;padding:14px;transition:all .15s;}
+.card:hover{border-color:var(--bda);transform:translateY(-2px);}
+.card-ico{font-size:30px;margin-bottom:7px;}
+.card-name{font-size:calc(13px * var(--zoom));font-weight:700;color:var(--tx);margin-bottom:4px;}
+.card-desc{font-size:calc(11px * var(--zoom));color:var(--tx2);line-height:1.4;flex:1;}
+.card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+.card-sz{font-size:10px;color:var(--tx2);}
+.btn-inst{padding:5px 12px;border-radius:6px;border:none;cursor:pointer;font-size:calc(11px * var(--zoom));font-weight:700;transition:all .14s;}
+.btn-inst.inst{background:linear-gradient(135deg,var(--a),var(--a3));color:#000;}
+.btn-inst.inst:hover{transform:scale(1.05);}
+.btn-inst.remv{background:rgba(255,96,88,0.14);color:#ff6058;border:1px solid rgba(255,96,88,0.3);}
+.btn-inst.remv:hover{background:rgba(255,96,88,0.24);}
+.btn-inst.sys{background:rgba(255,255,255,0.06);color:var(--tx2);cursor:not-allowed;}
+
+/* Обои */
+.wp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:7px;}
+.wp-th{height:58px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .15s;position:relative;overflow:hidden;}
+.wp-th:hover{transform:scale(1.06);border-color:var(--bda);}
+.wp-th.wsel{border-color:var(--a);box-shadow:0 0 12px rgba(0,229,255,0.4);}
+.wp-th span{position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:9px;color:rgba(255,255,255,0.8);font-weight:600;text-shadow:0 1px 3px rgba(0,0,0,0.8);}
+.live-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:9px;}
+.live-card{height:68px;border-radius:9px;cursor:pointer;border:2px solid transparent;overflow:hidden;position:relative;transition:transform .15s,border-color .15s;}
+.live-card:hover{transform:scale(1.06);border-color:var(--bda);}
+.live-card.wsel{border-color:var(--a);box-shadow:0 0 14px rgba(0,229,255,0.4);}
+.live-card span{position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:9px;color:rgba(255,255,255,0.9);font-weight:700;text-shadow:0 1px 4px rgba(0,0,0,0.9);}
+.upload-zone{border:2px dashed var(--bd);border-radius:10px;padding:22px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:10px;}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--a);background:rgba(0,229,255,0.05);}
+.upload-zone p{font-size:calc(13px * var(--zoom));color:var(--tx2);margin-top:8px;}
+.upload-zone small{font-size:calc(11px * var(--zoom));color:var(--tx2);opacity:.6;}
+.cust-thumbs{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;}
+.cust-th{width:78px;height:54px;border-radius:7px;object-fit:cover;border:2px solid transparent;cursor:pointer;transition:all .15s;flex-shrink:0;}
+.cust-th:hover{border-color:var(--bda);}
+.cust-th.wsel{border-color:var(--a);}
+
+/* Виджет-менеджер */
+.wgt-card{background:rgba(255,255,255,0.04);border:1px solid var(--bd);border-radius:10px;padding:13px;transition:all .15s;}
+.wgt-card:hover{border-color:var(--bda);}
+.wgt-card-ico{font-size:26px;margin-bottom:6px;}
+.wgt-card-name{font-size:calc(12px * var(--zoom));font-weight:700;color:var(--tx);margin-bottom:3px;}
+.wgt-card-desc{font-size:calc(11px * var(--zoom));color:var(--tx2);line-height:1.4;margin-bottom:10px;}
+.btn-add{padding:5px 12px;border-radius:6px;border:none;cursor:pointer;font-size:calc(11px * var(--zoom));font-weight:700;background:linear-gradient(135deg,var(--a),var(--a3));color:#000;transition:transform .1s;}
+.btn-add:hover{transform:scale(1.05);}
+.btn-add.added{background:rgba(255,96,88,0.14);color:#ff6058;border:1px solid rgba(255,96,88,0.3);}
+
+/* Блокнот */
+.np-bar{display:flex;gap:5px;padding:7px 12px;border-bottom:1px solid var(--bd);background:rgba(255,255,255,0.03);flex-wrap:wrap;}
+.np-btn{padding:4px 9px;background:rgba(255,255,255,0.07);border:1px solid var(--bd);border-radius:5px;cursor:pointer;font-size:calc(11px * var(--zoom));color:var(--tx2);transition:all .13s;}
+.np-btn:hover{border-color:var(--a);color:var(--a);}
+.np-ta{width:100%;height:100%;background:transparent;border:none;outline:none;resize:none;color:var(--tx);font-family:'Courier New',monospace;font-size:calc(13px * var(--zoom));padding:14px;line-height:1.75;caret-color:var(--a);}
+.np-stat{padding:4px 12px;border-top:1px solid var(--bd);font-size:10px;color:var(--tx2);display:flex;gap:14px;flex-shrink:0;}
+
+/* FM */
+.fm-tb{display:flex;align-items:center;gap:6px;padding:7px 11px;border-bottom:1px solid var(--bd);background:rgba(255,255,255,0.03);flex-shrink:0;}
+.fm-tb-btn{display:flex;align-items:center;gap:5px;padding:4px 8px;background:rgba(255,255,255,0.06);border:1px solid var(--bd);border-radius:5px;cursor:pointer;font-size:calc(11px * var(--zoom));color:var(--tx2);transition:all .13s;}
+.fm-tb-btn:hover{border-color:var(--a);color:var(--a);}
+.fm-path{flex:1;background:rgba(255,255,255,0.05);border:1px solid var(--bd);border-radius:5px;padding:3px 9px;font-size:calc(11px * var(--zoom));color:var(--a);}
+.fm-body{display:flex;flex:1;overflow:hidden;}
+.fm-side{width:120px;border-right:1px solid var(--bd);padding:9px 5px;display:flex;flex-direction:column;gap:2px;flex-shrink:0;overflow:auto;}
+.fm-si{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:calc(11px * var(--zoom));color:var(--tx2);transition:all .12s;}
+.fm-si:hover,.fm-si.fma{background:rgba(0,229,255,0.09);color:var(--a);}
+.fm-files{flex:1;padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(68px * var(--zoom)),1fr));gap:9px;align-content:start;overflow:auto;}
+.fm-file{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:7px;cursor:pointer;text-align:center;transition:background .12s,transform .09s;}
+.fm-file:hover{background:rgba(0,229,255,0.09);transform:scale(1.05);}
+.fm-file-ico{font-size:calc(34px * var(--zoom));}
+.fm-file-nm{font-size:calc(10px * var(--zoom));color:var(--tx);line-height:1.3;word-break:break-word;max-width:100%;}
+
+/* Настройки */
+.cfg-body{display:flex;height:100%;}
+.cfg-nav{width:140px;border-right:1px solid var(--bd);padding:9px 5px;display:flex;flex-direction:column;gap:2px;flex-shrink:0;}
+.cfg-ni{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:8px;cursor:pointer;font-size:calc(12px * var(--zoom));color:var(--tx2);transition:all .12s;}
+.cfg-ni:hover,.cfg-ni.cna{background:rgba(0,229,255,0.09);color:var(--a);}
+.cfg-cont{flex:1;padding:16px;overflow:auto;}
+.cfg-sec{display:none;}.cfg-sec.csa{display:block;}
+.cfg-group{margin-bottom:20px;}
+.cfg-lbl{font-size:10px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;color:var(--a);margin-bottom:9px;}
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.theme-card{padding:9px;border-radius:9px;border:2px solid var(--bd);cursor:pointer;transition:all .15s;text-align:center;}
+.theme-card:hover{border-color:var(--bda);transform:scale(1.03);}
+.theme-card.tsel{border-color:var(--a);box-shadow:0 0 14px rgba(0,229,255,0.25);}
+.theme-prev{height:34px;border-radius:5px;margin-bottom:5px;}
+.theme-nm{font-size:calc(11px * var(--zoom));font-weight:600;}
+.zoom-row{display:flex;gap:7px;}
+.zoom-btn{flex:1;padding:9px;background:rgba(255,255,255,0.06);border:1px solid var(--bd);border-radius:7px;cursor:pointer;font-size:calc(12px * var(--zoom));font-weight:700;color:var(--tx2);text-align:center;transition:all .14s;}
+.zoom-btn:hover,.zoom-btn.zsel{border-color:var(--a);color:var(--a);background:rgba(0,229,255,0.08);}
+
+/* Калькулятор */
+.calc-wrap{padding:14px;display:flex;flex-direction:column;gap:9px;}
+.calc-disp{background:rgba(0,0,0,0.3);border:1px solid var(--bd);border-radius:9px;padding:10px 14px;text-align:right;}
+.calc-expr{font-size:11px;color:var(--tx2);min-height:15px;font-family:monospace;}
+.calc-val{font-size:calc(30px * var(--zoom));font-weight:900;color:var(--tx);font-family:monospace;letter-spacing:-1px;}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.cb{padding:11px;border-radius:8px;border:1px solid var(--bd);background:rgba(255,255,255,0.07);cursor:pointer;font-size:calc(15px * var(--zoom));font-weight:700;color:var(--tx);transition:all .1s;text-align:center;}
+.cb:hover{background:rgba(255,255,255,0.14);}
+.cb:active{transform:scale(0.93);}
+.cb.cop{background:rgba(0,229,255,0.1);color:var(--a);border-color:var(--bd);}
+.cb.cop:hover{background:rgba(0,229,255,0.18);}
+.cb.ceq{background:linear-gradient(135deg,var(--a),var(--a3));color:#000;border:none;}
+.cb.ceq:hover{filter:brightness(1.1);}
+
+/* Мировые часы */
+.wc-item{display:flex;align-items:center;gap:11px;padding:9px 13px;background:rgba(255,255,255,0.04);border:1px solid var(--bd);border-radius:8px;margin-bottom:7px;}
+.wc-city{flex:1;}
+.wc-city-name{font-size:calc(12px * var(--zoom));font-weight:700;color:var(--tx);}
+.wc-city-tz{font-size:10px;color:var(--tx2);}
+.wc-time{font-size:calc(17px * var(--zoom));font-weight:900;color:var(--a);font-family:monospace;font-variant-numeric:tabular-nums;}
+
+/* Paint */
+.paint-bar{display:flex;align-items:center;gap:7px;padding:7px 11px;border-bottom:1px solid var(--bd);background:rgba(255,255,255,0.03);flex-wrap:wrap;flex-shrink:0;}
+.paint-canvas{flex:1;cursor:crosshair;touch-action:none;display:block;}
+
+/* Terminal */
+.term-out{flex:1;overflow:auto;padding:11px;font-size:calc(12px * var(--zoom));color:#00e5ff;line-height:1.7;white-space:pre-wrap;font-family:'Courier New',monospace;}
+.term-in-row{display:flex;align-items:center;border-top:1px solid rgba(0,229,255,0.2);padding:6px 11px;gap:7px;flex-shrink:0;}
+.term-prompt{color:#00ff9f;font-size:calc(12px * var(--zoom));font-family:'Courier New',monospace;white-space:nowrap;}
+.term-input{flex:1;background:none;border:none;outline:none;color:#00e5ff;font-family:'Courier New',monospace;font-size:calc(12px * var(--zoom));caret-color:#00e5ff;}
+
+/* Прогресс установки */
+.inst-prog{width:100%;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;margin-top:5px;}
+.inst-prog-fill{height:100%;background:linear-gradient(90deg,var(--a),var(--a2));border-radius:2px;transition:width .3s;}
+
+/* Сапёр */
+.ms-cell{width:calc(28px * var(--zoom));height:calc(28px * var(--zoom));border-radius:5px;border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:calc(12px * var(--zoom));font-weight:700;background:rgba(255,255,255,0.07);transition:background .09s,transform .07s;-webkit-user-select:none;user-select:none;}
+.ms-cell:hover{background:rgba(0,229,255,0.13);transform:scale(1.06);}
+.ms-cell.mr{background:rgba(0,0,0,0.2)!important;cursor:default;transform:none!important;border-color:transparent!important;}
+.ms-cell.mf{background:rgba(255,189,68,0.12);border-color:rgba(255,189,68,0.5);}
+.ms-cell.mboom{background:rgba(255,96,88,0.3);border-color:#ff6058;}
+.ms-cell.mn1{color:#4fc3f7}.ms-cell.mn2{color:#81c784}.ms-cell.mn3{color:#ef5350}.ms-cell.mn4{color:#9c27b0}.ms-cell.mn5{color:#ff5722}.ms-cell.mn6{color:#00bcd4}.ms-cell.mn7{color:#e91e63}.ms-cell.mn8{color:#9e9e9e}
+.game-over-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;border-radius:8px;z-index:10;}
+.go-text{font-size:calc(26px * var(--zoom));font-weight:900;}
+.go-won{color:#00ff9f;text-shadow:0 0 20px #00ff9f;}
+.go-lost{color:#ff6058;text-shadow:0 0 20px #ff6058;}
+
+/* Загрузка */
+#boot{position:fixed;inset:0;background:#000;z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;}
+#boot.bfade{animation:bF .5s 2.6s ease forwards;}
+@keyframes bF{to{opacity:0;pointer-events:none;}}
+.boot-logo{font-size:52px;font-weight:900;letter-spacing:5px;background:linear-gradient(135deg,#00e5ff,#7c4dff,#ff006e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.boot-sub{color:#334;font-size:13px;letter-spacing:6px;text-transform:uppercase;}
+.boot-dots{display:flex;gap:6px;}
+.bd{width:6px;height:6px;border-radius:50%;background:#00e5ff;animation:bdA 1.2s ease infinite;}
+.bd:nth-child(2){animation-delay:.2s;}.bd:nth-child(3){animation-delay:.4s;}
+@keyframes bdA{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1.3)}}
+.boot-bar{width:200px;height:2px;background:#111;border-radius:1px;overflow:hidden;}
+.boot-prog{height:100%;background:linear-gradient(90deg,#00e5ff,#7c4dff,#ff006e);width:0;animation:bP 2.2s ease forwards;border-radius:1px;}
+@keyframes bP{to{width:100%;}}
+
+/* Scrollbars */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bda);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--a);}
+
+/* Mobile */
+@media(max-width:768px){
+  .win{top:0!important;left:0!important;width:100%!important;height:100%!important;border-radius:0;min-width:unset;}
+  .wb{width:26px;height:26px;}
+  #smenu{width:calc(100vw - 20px);}
+  .theme-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:480px){
+  :root{--th:58px;}
+  #start-btn span{display:none;}
+  .tbi span{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- BOOT -->
+<div id="boot" class="bfade">
+  <div class="boot-logo">КИБЕР ОС</div>
+  <div class="boot-sub">Web Edition 3.0</div>
+  <div class="boot-dots"><div class="bd"></div><div class="bd"></div><div class="bd"></div></div>
+  <div class="boot-bar"><div class="boot-prog"></div></div>
+</div>
+
+<!-- DESKTOP -->
+<div id="desktop">
+  <canvas id="wp-canvas"></canvas>
+  <div id="wp-static"></div>
+  <div id="wp-overlay"></div>
+  <!-- Иконки, виджеты и окна рендерятся сюда через JS -->
+  <div id="icons-grid"></div>
+</div>
+
+<!-- TASKBAR -->
+<div id="taskbar">
+  <button id="start-btn" onclick="UI.toggleStart()">
+    <span style="font-size:17px">⊞</span>
+    <span>Пуск</span>
+  </button>
+  <div id="tb-apps"></div>
+  <div id="systray">
+    <button class="tray-btn" onclick="Apps.store()" title="Магазин">🛒</button>
+    <button class="tray-btn" onclick="Apps.widgetMgr()" title="Виджеты">🧩</button>
+    <button class="tray-btn" onclick="Apps.wallpapers()" title="Обои">🖼</button>
+    <button class="tray-btn" onclick="CustomApps.openManager()" title="Мои приложения">📦</button>
+    <div id="clock"></div>
+  </div>
+</div>
+
+<!-- МЕНЮ ПУСК -->
+<div id="smenu">
+  <input id="sm-search" class="sm-search" placeholder="🔍 Поиск…" oninput="UI.filterApps(this.value)">
+  <div class="sm-lbl">Приложения</div>
+  <div id="sm-grid"></div>
+  <div class="sm-footer">
+    <span style="font-size:11px;color:var(--tx2)">КиберОС v3.0</span>
+    <button class="sm-pwr" onclick="UI.powerOff()">⏻ Завершить</button>
+  </div>
+</div>
+
+<!-- КОНТЕКСТНОЕ МЕНЮ -->
+<div id="ctx"></div>
+<!-- УВЕДОМЛЕНИЯ -->
+<div id="notifs"></div>
+
+<script>
+'use strict';
+// ════════════════════════════════════════════
+// СОСТОЯНИЕ
+// ════════════════════════════════════════════
+const ST = {
+  theme: 'def',
+  zoom: 1,
+  wpMode: 'gradient',   // gradient | image | live
+  wpIdx: 0,
+  wpSrc: null,
+  wpLive: null,
+  dim: 0,
+  liveRaf: null,
+  installed: JSON.parse(localStorage.getItem('kos_apps') || '["computer","notepad","game","settings","store","wallpapers","widgets"]'),
+  customWP: (() => { try { return JSON.parse(localStorage.getItem('kos_cwp') || '[]'); } catch(e) { return []; } })(),
+  activeWidgets: {},
+  records: JSON.parse(localStorage.getItem('kos_rec') || '[]'),
+};
+
+// ════════════════════════════════════════════
+// УВЕДОМЛЕНИЯ
+// ════════════════════════════════════════════
+function notify(title, text, dur = 3500) {
+  const wrap = document.getElementById('notifs');
+  const n = document.createElement('div');
+  n.className = 'notif';
+  n.innerHTML = `<div class="notif-t">🔔 ${title}</div><div class="notif-b">${text}</div>`;
+  n.onclick = () => n.remove();
+  wrap.appendChild(n);
+  setTimeout(() => { n.style.cssText += 'opacity:0;transition:opacity .4s'; setTimeout(() => n.remove(), 400); }, dur);
+}
+
+// ════════════════════════════════════════════
+// МЕНЕДЖЕР ОКОН
+// ════════════════════════════════════════════
+const WM = {
+  z: 200,
+  wins: {},
+  active: null,
+
+  create({ id, title, icon = '📄', w = 680, h = 460, html }) {
+    // Если уже открыто — показать
+    if (this.wins[id]) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.classList.remove('wmin');
+        this.wins[id].minimized = false;
+        this.focus(id);
+        return el;
+      }
+    }
+    const el = document.createElement('div');
+    el.className = 'win';
+    el.id = id;
+    const iw = window.innerWidth, ih = window.innerHeight - parseInt(getComputedStyle(document.documentElement).getPropertyValue('--th')) - 10;
+    const rw = Math.min(w, iw - 30);
+    const rh = Math.min(h, ih - 30);
+    el.style.width = rw + 'px';
+    el.style.height = rh + 'px';
+    const maxL = Math.max(0, iw - rw - 20);
+    const maxT = Math.max(0, ih - rh - 20);
+    el.style.left = Math.round(40 + Math.random() * Math.min(maxL, 180)) + 'px';
+    el.style.top = Math.round(20 + Math.random() * Math.min(maxT, 100)) + 'px';
+    el.style.zIndex = ++this.z;
+
+    el.innerHTML = `
+      <div class="wtb" data-wid="${id}">
+        <span class="wtb-ico">${icon}</span>
+        <span class="wtb-ttl">${title}</span>
+        <div class="wbtns">
+          <button class="wb wmn" title="Свернуть" data-action="min" data-wid="${id}"></button>
+          <button class="wb wmx" title="Развернуть" data-action="max" data-wid="${id}"></button>
+          <button class="wb wcl" title="Закрыть" data-action="close" data-wid="${id}"></button>
+        </div>
+      </div>
+      <div class="wbody">${html}</div>
+      <div class="wrsz" data-wid="${id}"></div>
+    `;
+
+    document.getElementById('desktop').appendChild(el);
+    this.wins[id] = { title, icon, minimized: false, maximized: false };
+
+    // Кнопки управления
+    el.querySelector('[data-action="min"]').addEventListener('click', (e) => { e.stopPropagation(); this.minimize(id); });
+    el.querySelector('[data-action="max"]').addEventListener('click', (e) => { e.stopPropagation(); this.maximize(id); });
+    el.querySelector('[data-action="close"]').addEventListener('click', (e) => { e.stopPropagation(); this.close(id); });
+
+    // Фокус при клике
+    el.addEventListener('mousedown', () => this.focus(id));
+    el.addEventListener('touchstart', () => this.focus(id), { passive: true });
+
+    this._drag(el);
+    this._resize(el);
+    this.focus(id);
+    this._tb();
+    return el;
+  },
+
+  focus(id) {
+    document.querySelectorAll('.win').forEach(w => w.classList.remove('wactive'));
+    const el = document.getElementById(id);
+    if (el) { el.classList.add('wactive'); el.style.zIndex = ++this.z; }
+    this.active = id;
+    this._tb();
+  },
+
+  minimize(id) {
+    const el = document.getElementById(id);
+    if (el) { el.classList.add('wmin'); this.wins[id].minimized = true; }
+    if (this.active === id) this.active = null;
+    this._tb();
+  },
+
+  maximize(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const d = this.wins[id];
+    d.maximized = !d.maximized;
+    el.classList.toggle('wmax', d.maximized);
+  },
+
+  close(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+    delete this.wins[id];
+    if (this.active === id) this.active = null;
+    this._tb();
+  },
+
+  _tb() {
+    const bar = document.getElementById('tb-apps');
+    bar.innerHTML = '';
+    Object.entries(this.wins).forEach(([id, d]) => {
+      const b = document.createElement('div');
+      b.className = 'tbi' + (this.active === id && !d.minimized ? ' tba' : '');
+      b.innerHTML = `<span>${d.icon}</span><span>${d.title}</span>`;
+      b.addEventListener('click', () => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (d.minimized) {
+          el.classList.remove('wmin');
+          d.minimized = false;
+          this.focus(id);
+        } else if (this.active === id) {
+          this.minimize(id);
+        } else {
+          this.focus(id);
+        }
+      });
+      bar.appendChild(b);
+    });
+  },
+
+  _drag(win) {
+    const tb = win.querySelector('.wtb');
+    let on = false, ox = 0, oy = 0;
+    const gs = (x, y) => {
+      if (this.wins[win.id]?.maximized) return;
+      on = true;
+      const r = win.getBoundingClientRect();
+      ox = x - r.left; oy = y - r.top;
+    };
+    const gm = (x, y) => {
+      if (!on) return;
+      win.style.left = Math.max(0, x - ox) + 'px';
+      win.style.top = Math.max(0, y - oy) + 'px';
+    };
+    const ge = () => { on = false; };
+
+    tb.addEventListener('mousedown', e => { if (e.target.closest('.wbtns')) return; e.preventDefault(); gs(e.clientX, e.clientY); });
+    document.addEventListener('mousemove', e => gm(e.clientX, e.clientY));
+    document.addEventListener('mouseup', ge);
+
+    tb.addEventListener('touchstart', e => { if (e.target.closest('.wbtns')) return; const t = e.touches[0]; gs(t.clientX, t.clientY); }, { passive: true });
+    document.addEventListener('touchmove', e => { if (!on) return; const t = e.touches[0]; gm(t.clientX, t.clientY); }, { passive: true });
+    document.addEventListener('touchend', ge);
+  },
+
+  _resize(win) {
+    const h = win.querySelector('.wrsz');
+    let on = false, sx = 0, sy = 0, sw = 0, sh = 0;
+    h.addEventListener('mousedown', e => { e.stopPropagation(); on = true; sx = e.clientX; sy = e.clientY; sw = win.offsetWidth; sh = win.offsetHeight; });
+    document.addEventListener('mousemove', e => {
+      if (!on) return;
+      win.style.width = Math.max(300, sw + e.clientX - sx) + 'px';
+      win.style.height = Math.max(160, sh + e.clientY - sy) + 'px';
+    });
+    document.addEventListener('mouseup', () => { on = false; });
+  }
+};
+
+// ════════════════════════════════════════════
+// ЖИВЫЕ ОБОИ
+// ════════════════════════════════════════════
+const LW = {
+  _raf: null,
+  stop() { if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; } },
+
+  stars(cv, cx) {
+    this.stop(); cv.width = cv.offsetWidth; cv.height = cv.offsetHeight;
+    const W = cv.width, H = cv.height;
+    const stars = Array.from({ length: 220 }, () => ({ x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.6 + 0.3, tw: Math.random() * Math.PI * 2, spd: 0.006 + Math.random() * 0.012 }));
+    let meteors = [], mt = 0;
+    const draw = () => {
+      cx.fillStyle = 'rgba(0,0,10,0.2)'; cx.fillRect(0, 0, W, H);
+      stars.forEach(s => {
+        s.tw += s.spd;
+        const op = 0.3 + 0.7 * Math.abs(Math.sin(s.tw));
+        cx.beginPath(); cx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        cx.fillStyle = `rgba(200,220,255,${op})`; cx.fill();
+        s.y -= 0.018; if (s.y < 0) { s.y = H; s.x = Math.random() * W; }
+      });
+      mt++;
+      if (mt > 140 && Math.random() < 0.025) { meteors.push({ x: Math.random() * W, y: 0, len: 70 + Math.random() * 130, spd: 7 + Math.random() * 7, ang: Math.PI / 5 + Math.random() * 0.4, life: 1 }); mt = 0; }
+      meteors = meteors.filter(m => {
+        m.x += Math.cos(m.ang) * m.spd; m.y += Math.sin(m.ang) * m.spd; m.life -= 0.032;
+        const ex = m.x - Math.cos(m.ang) * m.len, ey = m.y - Math.sin(m.ang) * m.len;
+        const g = cx.createLinearGradient(ex, ey, m.x, m.y);
+        g.addColorStop(0, 'rgba(200,230,255,0)'); g.addColorStop(1, `rgba(220,240,255,${m.life})`);
+        cx.strokeStyle = g; cx.lineWidth = 1.5; cx.beginPath(); cx.moveTo(ex, ey); cx.lineTo(m.x, m.y); cx.stroke();
+        return m.life > 0;
+      });
+      this._raf = requestAnimationFrame(draw);
+    };
+    draw();
+  },
+
+  rain(cv, cx) {
+    this.stop(); cv.width = cv.offsetWidth; cv.height = cv.offsetHeight;
+    const W = cv.width, H = cv.height;
+    const drops = Array.from({ length: 160 }, () => ({ x: Math.random() * W, y: Math.random() * H, len: 15 + Math.random() * 25, spd: 8 + Math.random() * 12, op: 0.15 + Math.random() * 0.4 }));
+    const draw = () => {
+      cx.fillStyle = 'rgba(0,10,30,0.22)'; cx.fillRect(0, 0, W, H);
+      drops.forEach(d => {
+        cx.strokeStyle = `rgba(120,190,255,${d.op})`; cx.lineWidth = 0.7;
+        cx.beginPath(); cx.moveTo(d.x, d.y); cx.lineTo(d.x - 1, d.y + d.len); cx.stroke();
+        d.y += d.spd; if (d.y > H) { d.y = -d.len; d.x = Math.random() * W; }
+      });
+      this._raf = requestAnimationFrame(draw);
+    };
+    draw();
+  },
+
+  fire(cv, cx) {
+    this.stop(); cv.width = cv.offsetWidth; cv.height = cv.offsetHeight;
+    const W = cv.width, H = cv.height;
+    let parts = [];
+    const add = () => { for (let i = 0; i < 4; i++) parts.push({ x: W / 2 + (Math.random() - 0.5) * W * 0.55, y: H, vx: (Math.random() - 0.5) * 1.8, vy: -2 - Math.random() * 5, life: 1, r: 4 + Math.random() * 9, hue: 10 + Math.random() * 35 }); };
+    const draw = () => {
+      cx.fillStyle = 'rgba(8,0,0,0.15)'; cx.fillRect(0, 0, W, H);
+      add();
+      parts = parts.filter(p => {
+        p.x += p.vx; p.y += p.vy; p.life -= 0.013; p.vy -= 0.04;
+        if (p.life <= 0) return false;
+        const g = cx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * (2 - p.life));
+        g.addColorStop(0, `hsla(${p.hue + p.life * 20},100%,72%,${p.life})`);
+        g.addColorStop(0.5, `hsla(${p.hue},90%,50%,${p.life * 0.6})`);
+        g.addColorStop(1, 'transparent');
+        cx.beginPath(); cx.arc(p.x, p.y, p.r * (2 - p.life), 0, Math.PI * 2);
+        cx.fillStyle = g; cx.fill();
+        return true;
+      });
+      this._raf = requestAnimationFrame(draw);
+    };
+    draw();
+  },
+
+  geo(cv, cx) {
+    this.stop(); cv.width = cv.offsetWidth; cv.height = cv.offsetHeight;
+    const W = cv.width, H = cv.height;
+    const polys = Array.from({ length: 14 }, () => ({ x: Math.random() * W, y: Math.random() * H, sides: 3 + Math.floor(Math.random() * 5), r: 25 + Math.random() * 80, rot: Math.random() * Math.PI * 2, rs: (Math.random() - 0.5) * 0.018, vx: (Math.random() - 0.5) * 0.7, vy: (Math.random() - 0.5) * 0.7, hue: Math.random() * 360, a: 0.06 + Math.random() * 0.14 }));
+    const dp = (x, y, n, r, rot, hue, a) => {
+      cx.beginPath();
+      for (let i = 0; i < n; i++) { const ang = rot + i / n * Math.PI * 2; cx.lineTo(x + Math.cos(ang) * r, y + Math.sin(ang) * r); }
+      cx.closePath();
+      cx.fillStyle = `hsla(${hue},70%,40%,${a})`; cx.fill();
+      cx.strokeStyle = `hsla(${hue},80%,60%,${a * 2})`; cx.lineWidth = 1; cx.stroke();
+    };
+    const draw = () => {
+      cx.fillStyle = 'rgba(5,5,16,0.14)'; cx.fillRect(0, 0, W, H);
+      polys.forEach(p => {
+        p.rot += p.rs; p.x += p.vx; p.y += p.vy; p.hue += 0.4;
+        if (p.x < -120 || p.x > W + 120) p.vx *= -1;
+        if (p.y < -120 || p.y > H + 120) p.vy *= -1;
+        dp(p.x, p.y, p.sides, p.r, p.rot, p.hue, p.a);
+      });
+      polys.forEach((a, i) => polys.slice(i + 1).forEach(b => {
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d < 190) { cx.strokeStyle = `rgba(0,229,255,${(190 - d) / 2800})`; cx.lineWidth = 0.5; cx.beginPath(); cx.moveTo(a.x, a.y); cx.lineTo(b.x, b.y); cx.stroke(); }
+      }));
+      this._raf = requestAnimationFrame(draw);
+    };
+    draw();
+  },
+
+  wave(cv, cx) {
+    this.stop(); cv.width = cv.offsetWidth; cv.height = cv.offsetHeight;
+    const W = cv.width, H = cv.height; let t = 0;
+    const waves = [
+      { amp: 38, freq: 0.009, spd: 0.03, y: H * 0.5, col: [0, 229, 255], op: 0.32 },
+      { amp: 28, freq: 0.013, spd: 0.05, y: H * 0.54, col: [124, 77, 255], op: 0.22 },
+      { amp: 48, freq: 0.006, spd: 0.022, y: H * 0.46, col: [255, 0, 110], op: 0.18 },
+    ];
+    const draw = () => {
+      cx.fillStyle = 'rgba(0,8,20,0.14)'; cx.fillRect(0, 0, W, H);
+      waves.forEach(w => {
+        cx.beginPath();
+        for (let x = 0; x <= W; x += 2) {
+          const y = w.y + Math.sin(x * w.freq + t * w.spd) * w.amp + Math.cos(x * w.freq * 0.7 + t * w.spd * 1.3) * w.amp * 0.5;
+          x === 0 ? cx.moveTo(x, y) : cx.lineTo(x, y);
+        }
+        const g = cx.createLinearGradient(0, w.y - w.amp, 0, H);
+        g.addColorStop(0, `rgba(${w.col.join(',')},${w.op})`); g.addColorStop(1, `rgba(${w.col.join(',')},0)`);
+        cx.lineTo(W, H); cx.lineTo(0, H); cx.closePath(); cx.fillStyle = g; cx.fill();
+        cx.strokeStyle = `rgba(${w.col.join(',')},${w.op + 0.22})`; cx.lineWidth = 1.5;
+        cx.beginPath();
+        for (let x = 0; x <= W; x += 2) {
+          const y = w.y + Math.sin(x * w.freq + t * w.spd) * w.amp + Math.cos(x * w.freq * 0.7 + t * w.spd * 1.3) * w.amp * 0.5;
+          x === 0 ? cx.moveTo(x, y) : cx.lineTo(x, y);
+        }
+        cx.stroke();
+      });
+      t++; this._raf = requestAnimationFrame(draw);
+    };
+    draw();
+  },
+
+  snow(cv, cx) {
+    this.stop(); cv.width = cv.offsetWidth; cv.height = cv.offsetHeight;
+    const W = cv.width, H = cv.height;
+    const fl = Array.from({ length: 200 }, () => ({ x: Math.random() * W, y: Math.random() * H, r: 0.8 + Math.random() * 3, spd: 0.4 + Math.random() * 2, ang: Math.random() * Math.PI * 2, as: (Math.random() - 0.5) * 0.018 }));
+    const draw = () => {
+      cx.fillStyle = 'rgba(12,17,28,0.2)'; cx.fillRect(0, 0, W, H);
+      fl.forEach(f => {
+        f.ang += f.as; f.y += f.spd; f.x += Math.sin(f.ang) * 0.4;
+        if (f.y > H) f.y = -5; if (f.x < 0) f.x = W; if (f.x > W) f.x = 0;
+        cx.beginPath(); cx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+        cx.fillStyle = `rgba(200,220,255,${0.4 + 0.6 * (f.r / 4)})`; cx.fill();
+        if (f.r > 2.5) { cx.beginPath(); cx.arc(f.x - 0.5, f.y - 0.5, f.r * 0.4, 0, Math.PI * 2); cx.fillStyle = 'rgba(255,255,255,0.8)'; cx.fill(); }
+      });
+      this._raf = requestAnimationFrame(draw);
+    };
+    draw();
+  },
+
+  matrix(cv, cx) {
+    this.stop(); cv.width = cv.offsetWidth; cv.height = cv.offsetHeight;
+    const W = cv.width, H = cv.height;
+    const cols = Math.floor(W / 16);
+    const drops = Array(cols).fill(1);
+    const chars = 'アイウエオカキクサシスタチナニハヒフマミムメヤユラリルレロ0123456789ABCDEF';
+    cx.fillStyle = '#000'; cx.fillRect(0, 0, W, H);
+    const draw = () => {
+      cx.fillStyle = 'rgba(0,5,0,0.16)'; cx.fillRect(0, 0, W, H);
+      cx.font = 'bold 14px monospace';
+      drops.forEach((y, i) => {
+        const ch = chars[Math.floor(Math.random() * chars.length)];
+        cx.fillStyle = y === 1 ? '#ffffff' : '#00ff41';
+        cx.fillText(ch, i * 16, y * 16);
+        if (y * 16 > H && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      });
+      this._raf = requestAnimationFrame(draw);
+    };
+    draw();
+  }
+};
+
+// ════════════════════════════════════════════
+// ВИДЖЕТЫ
+// ════════════════════════════════════════════
+const Wgt = {
+  defs: {
+    clock: {
+      name: 'Часы', icon: '🕐', desc: 'Цифровые часы реального времени',
+      build(uid) {
+        const el = document.createElement('div');
+        el.className = 'wgt'; el.id = 'wgt-' + uid;
+        el.style.cssText = 'width:210px;left:20px;top:20px;';
+        el.innerHTML = `<div class="wgt-hdr"><span>🕐 ЧАСЫ</span><button class="wgt-x" onclick="Wgt.remove('${uid}')">✕</button></div>
+          <div class="wgt-body"><div class="w-clk-t" id="wct-${uid}">00:00</div><div class="w-clk-d" id="wcd-${uid}"></div></div>`;
+        document.getElementById('desktop').appendChild(el);
+        const upd = () => {
+          const now = new Date(), te = document.getElementById('wct-' + uid), de = document.getElementById('wcd-' + uid);
+          if (te) te.textContent = now.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          if (de) de.textContent = now.toLocaleDateString('ru', { weekday: 'long', day: 'numeric', month: 'long' });
+        };
+        upd(); el._int = setInterval(upd, 1000);
+        this._drag(el); return el;
+      }
+    },
+    perf: {
+      name: 'Ресурсы', icon: '📊', desc: 'Мониторинг CPU / RAM / GPU',
+      build(uid) {
+        const el = document.createElement('div');
+        el.className = 'wgt'; el.id = 'wgt-' + uid;
+        el.style.cssText = 'width:230px;left:250px;top:20px;';
+        const rows = ['CPU', 'RAM', 'GPU', 'ДИСК'];
+        el.innerHTML = `<div class="wgt-hdr"><span>📊 РЕСУРСЫ</span><button class="wgt-x" onclick="Wgt.remove('${uid}')">✕</button></div>
+          <div class="wgt-body">${rows.map(n => `<div class="w-perf-row"><span style="width:34px;font-size:10px">${n}</span><div class="w-perf-bg"><div class="w-perf-fill" id="pf-${uid}-${n}" style="width:30%"></div></div><span class="w-perf-v" id="pv-${uid}-${n}">30%</span></div>`).join('')}</div>`;
+        document.getElementById('desktop').appendChild(el);
+        const upd = () => rows.forEach(n => {
+          const v = 18 + Math.random() * 65, pf = document.getElementById('pf-' + uid + '-' + n), pv = document.getElementById('pv-' + uid + '-' + n);
+          if (pf) { pf.style.width = v + '%'; pf.style.background = v > 80 ? 'linear-gradient(90deg,#ff6058,#ff9800)' : 'linear-gradient(90deg,var(--a),var(--a3))'; }
+          if (pv) pv.textContent = Math.round(v) + '%';
+        });
+        upd(); el._int = setInterval(upd, 2200);
+        this._drag(el); return el;
+      }
+    },
+    weather: {
+      name: 'Погода', icon: '☁', desc: 'Текущая погода',
+      build(uid) {
+        const icons = ['☀️', '⛅', '🌧', '❄️', '🌩', '🌤']; const temps = ['-5', '+2', '+10', '+18', '+24', '+30']; const ri = Math.floor(Math.random() * icons.length);
+        const el = document.createElement('div');
+        el.className = 'wgt'; el.id = 'wgt-' + uid;
+        el.style.cssText = 'width:200px;left:20px;top:160px;';
+        el.innerHTML = `<div class="wgt-hdr"><span>☁ ПОГОДА</span><button class="wgt-x" onclick="Wgt.remove('${uid}')">✕</button></div>
+          <div class="wgt-body" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <span style="font-size:44px">${icons[ri]}</span>
+            <div><div style="font-size:calc(28px * var(--zoom));font-weight:900;color:var(--a)">${temps[ri]}°C</div><div style="font-size:11px;color:var(--tx2)">Местное время</div></div>
+            <div style="width:100%;font-size:11px;color:var(--tx2);display:flex;gap:10px;padding-top:4px"><span>💨 10 км/ч</span><span>💧 65%</span><span>👁 8 км</span></div>
+          </div>`;
+        document.getElementById('desktop').appendChild(el);
+        this._drag(el); return el;
+      }
+    },
+    note: {
+      name: 'Заметка', icon: '🗒', desc: 'Быстрая заметка',
+      build(uid) {
+        const el = document.createElement('div');
+        el.className = 'wgt'; el.id = 'wgt-' + uid;
+        el.style.cssText = 'width:210px;left:250px;top:170px;';
+        const saved = localStorage.getItem('wgt_note_' + uid) || '';
+        el.innerHTML = `<div class="wgt-hdr"><span>🗒 ЗАМЕТКА</span><button class="wgt-x" onclick="Wgt.remove('${uid}')">✕</button></div>
+          <div class="wgt-body"><textarea class="w-note-ta" rows="5" placeholder="Введите заметку…">${saved}</textarea></div>`;
+        document.getElementById('desktop').appendChild(el);
+        el.querySelector('textarea').addEventListener('input', function() { localStorage.setItem('wgt_note_' + uid, this.value); });
+        this._drag(el); return el;
+      }
+    },
+    calendar: {
+      name: 'Календарь', icon: '📅', desc: 'Мини-календарь',
+      build(uid) {
+        const now = new Date(), y = now.getFullYear(), mo = now.getMonth(), d = now.getDate();
+        const months = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+        const days = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+        const first = (new Date(y, mo, 1).getDay() + 6) % 7;
+        const last = new Date(y, mo + 1, 0).getDate();
+        let cells = '';
+        for (let i = 0; i < first; i++) cells += '<div></div>';
+        for (let i = 1; i <= last; i++) {
+          const today = i === d;
+          cells += `<div style="text-align:center;font-size:10px;padding:2px;border-radius:4px;${today ? 'background:var(--a);color:#000;font-weight:700' : 'color:var(--tx)'}">${i}</div>`;
+        }
+        const el = document.createElement('div');
+        el.className = 'wgt'; el.id = 'wgt-' + uid;
+        el.style.cssText = 'width:206px;left:480px;top:20px;';
+        el.innerHTML = `<div class="wgt-hdr"><span>📅 ${months[mo]} ${y}</span><button class="wgt-x" onclick="Wgt.remove('${uid}')">✕</button></div>
+          <div class="wgt-body" style="padding:8px 10px">
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin-bottom:4px">${days.map(d => `<div style="text-align:center;font-size:9px;font-weight:700;color:var(--a)">${d}</div>`).join('')}</div>
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">${cells}</div>
+          </div>`;
+        document.getElementById('desktop').appendChild(el);
+        this._drag(el); return el;
+      }
+    }
+  },
+
+  active: {},
+
+  add(defId, x, y, silent = false) {
+    const def = this.defs[defId]; if (!def) return;
+    const uid = defId + '_' + Date.now();
+    const el = def.build.call(this, uid);
+    if (x !== undefined && el) { el.style.left = x + 'px'; el.style.top = y + 'px'; }
+    this.active[uid] = defId;
+    this._save();
+    if (!silent) notify('Виджет', `«${def.name}» добавлен на рабочий стол`);
+    // Обновить кнопки
+    document.querySelectorAll(`[data-wdef="${defId}"]`).forEach(b => { b.textContent = '✕ Убрать'; b.classList.add('added'); });
+  },
+
+  remove(uid) {
+    const el = document.getElementById('wgt-' + uid);
+    if (el) { clearInterval(el._int); el.remove(); }
+    const defId = this.active[uid];
+    delete this.active[uid];
+    this._save();
+    const anyActive = Object.values(this.active).includes(defId);
+    if (!anyActive) document.querySelectorAll(`[data-wdef="${defId}"]`).forEach(b => { b.textContent = '+ Добавить'; b.classList.remove('added'); });
+  },
+
+  _save() {
+    const state = Object.entries(this.active).map(([uid, defId]) => {
+      const el = document.getElementById('wgt-' + uid);
+      return { id: defId, x: el ? parseInt(el.style.left) || 20 : 20, y: el ? parseInt(el.style.top) || 20 : 20 };
+    });
+    localStorage.setItem('kos_wgts', JSON.stringify(state));
+  },
+
+  restore() {
+    try {
+      const state = JSON.parse(localStorage.getItem('kos_wgts') || '[]');
+      state.forEach(w => this.add(w.id, w.x, w.y, true));
+    } catch (e) {}
+  },
+
+  _drag(el) {
+    const hdr = el.querySelector('.wgt-hdr');
+    let on = false, ox = 0, oy = 0;
+    hdr.addEventListener('mousedown', e => {
+      if (e.target.closest('.wgt-x')) return;
+      on = true; const r = el.getBoundingClientRect(); ox = e.clientX - r.left; oy = e.clientY - r.top; el.style.zIndex = 90;
+    });
+    document.addEventListener('mousemove', e => { if (!on) return; el.style.left = Math.max(0, e.clientX - ox) + 'px'; el.style.top = Math.max(0, e.clientY - oy) + 'px'; });
+    document.addEventListener('mouseup', () => { if (on) { on = false; this._save(); } });
+    hdr.addEventListener('touchstart', e => { if (e.target.closest('.wgt-x')) return; const t = e.touches[0]; const r = el.getBoundingClientRect(); ox = t.clientX - r.left; oy = t.clientY - r.top; on = true; }, { passive: true });
+    document.addEventListener('touchmove', e => { if (!on) return; const t = e.touches[0]; el.style.left = Math.max(0, t.clientX - ox) + 'px'; el.style.top = Math.max(0, t.clientY - oy) + 'px'; }, { passive: true });
+    document.addEventListener('touchend', () => { if (on) { on = false; this._save(); } });
+  }
+};
+
+// ════════════════════════════════════════════
+// UI
+// ════════════════════════════════════════════
+const Catalog = [
+  { id: 'computer',   name: 'Мой компьютер', icon: '🖥',  desc: 'Файловый менеджер', size: '2 МБ',   sys: true },
+  { id: 'notepad',    name: 'Блокнот',        icon: '📝',  desc: 'Текстовый редактор', size: '1 МБ',  sys: true },
+  { id: 'game',       name: 'Сапёр',          icon: '💣',  desc: 'Классическая игра',  size: '1.5 МБ',sys: false },
+  { id: 'settings',   name: 'Параметры',      icon: '⚙',   desc: 'Настройки системы',  size: '1 МБ',  sys: true },
+  { id: 'store',      name: 'Магазин',         icon: '🛒',  desc: 'Установка приложений',size: '2 МБ', sys: true },
+  { id: 'wallpapers', name: 'Обои',            icon: '🖼',  desc: 'Обои рабочего стола',size: '1 МБ',  sys: true },
+  { id: 'widgets',    name: 'Виджеты',         icon: '🧩',  desc: 'Менеджер виджетов', size: '1 МБ',   sys: true },
+  { id: 'calculator', name: 'Калькулятор',    icon: '🧮',  desc: 'Инженерный калькулятор',size:'1 МБ',sys: false },
+  { id: 'wclock',     name: 'Мировые часы',   icon: '🕐',  desc: 'Время по всему миру',size: '0.8 МБ',sys: false },
+  { id: 'paint',      name: 'Рисование',      icon: '🎨',  desc: 'Графический редактор',size: '2 МБ', sys: false },
+  { id: 'terminal',   name: 'Терминал',       icon: '⌨',   desc: 'Командная строка',   size: '1.5 МБ',sys: false },
+  { id: 'music',      name: 'Медиаплеер',     icon: '🎵',  desc: 'Музыкальный плеер',  size: '3 МБ',  sys: false },
+];
+
+const Themes = {
+  def:   { cls: '',   name: 'КиберОС',  prev: 'linear-gradient(135deg,#020820,#00e5ff)' },
+  light: { cls: 'tl', name: 'Светлая',  prev: 'linear-gradient(135deg,#dde8ff,#0055ff)' },
+  dark:  { cls: 'td', name: 'Тёмная',   prev: 'linear-gradient(135deg,#120e20,#a855f7)' },
+  neon:  { cls: 'tn', name: 'Матрица',  prev: 'linear-gradient(135deg,#000500,#00ff41)' },
+  rose:  { cls: 'tr', name: 'Розовая',  prev: 'linear-gradient(135deg,#ffe0f4,#ff6fa8)' },
+  amber: { cls: 'ta', name: 'Янтарная', prev: 'linear-gradient(135deg,#120a00,#ffb300)' },
+};
+
+const GradWPs = [
+  { bg: 'linear-gradient(135deg,#020820,#05162e 40%,#020c1f)', name: 'Ночь' },
+  { bg: 'linear-gradient(135deg,#050510,#0a0020 50%,#020010)', name: 'Пурпур' },
+  { bg: 'linear-gradient(160deg,#0f2027,#203a43,#2c5364)', name: 'Стальной' },
+  { bg: 'linear-gradient(135deg,#1a0533,#2d0066,#0f0022)', name: 'Мистика' },
+  { bg: 'linear-gradient(135deg,#200122,#6f0000)', name: 'Рубин' },
+  { bg: 'linear-gradient(135deg,#004e92,#000428)', name: 'Океан' },
+  { bg: 'radial-gradient(ellipse at top,#1b2735 0%,#090a0f 100%)', name: 'Галактика' },
+  { bg: 'linear-gradient(135deg,#001233,#0a3d6b)', name: 'Сапфир' },
+  { bg: 'linear-gradient(135deg,#002200,#004400)', name: 'Лес' },
+  { bg: 'linear-gradient(135deg,#1a0000,#3d0000)', name: 'Вулкан' },
+  { bg: 'linear-gradient(135deg,#0a0010,#1a003a)', name: 'Чёрника' },
+  { bg: 'linear-gradient(135deg,#001a1a,#003333)', name: 'Глубина' },
+];
+
+const LiveWPs = [
+  { key: 'stars',  name: '⭐ Звёзды',    fn: 'stars',  bg: '#020820' },
+  { key: 'rain',   name: '🌧 Дождь',     fn: 'rain',   bg: '#001133' },
+  { key: 'fire',   name: '🔥 Огонь',     fn: 'fire',   bg: '#0a0000' },
+  { key: 'geo',    name: '🔷 Геометрия', fn: 'geo',    bg: '#050510' },
+  { key: 'wave',   name: '🌊 Волны',     fn: 'wave',   bg: '#000d1a' },
+  { key: 'snow',   name: '❄ Снег',       fn: 'snow',   bg: '#111827' },
+  { key: 'matrix', name: '💻 Матрица',   fn: 'matrix', bg: '#000500' },
+];
+
+const UI = {
+  init() {
+    CustomApps.loadAll();
+    this.applyTheme('def');
+    this.setWallpaper('gradient', 0);
+    this.renderIcons();
+    this.renderStartMenu();
+    this._clock();
+    this._ctx();
+    Wgt.restore();
+    // Закрыть меню пуск при клике вне
+    document.addEventListener('click', e => {
+      if (!e.target.closest('#smenu') && !e.target.closest('#start-btn'))
+        document.getElementById('smenu').classList.remove('sopen');
+      if (!e.target.closest('#ctx'))
+        document.getElementById('ctx').classList.remove('copen');
+    });
+    setTimeout(() => notify('КиберОС 3.0', 'Система запущена! Дважды кликните на иконку. 📦 — установите свои HTML-приложения через кнопку в трее'), 3000);
+  },
+
+  applyTheme(key) {
+    ST.theme = key;
+    const body = document.body;
+    Object.values(Themes).forEach(t => { if (t.cls) body.classList.remove(t.cls); });
+    if (Themes[key].cls) body.classList.add(Themes[key].cls);
+    document.querySelectorAll('.theme-card').forEach(c => c.classList.toggle('tsel', c.dataset.theme === key));
+  },
+
+  applyZoom(z) {
+    ST.zoom = z;
+    document.documentElement.style.setProperty('--zoom', z);
+    document.querySelectorAll('.zoom-btn').forEach(b => b.classList.toggle('zsel', parseFloat(b.dataset.z) === z));
+  },
+
+  setWallpaper(mode, val) {
+    LW.stop();
+    const canvas = document.getElementById('wp-canvas');
+    const staticEl = document.getElementById('wp-static');
+    const desk = document.getElementById('desktop');
+    ST.wpMode = mode;
+
+    // Сбросить canvas
+    canvas.width = 0; canvas.height = 0;
+    staticEl.style.backgroundImage = '';
+    staticEl.style.background = '';
+
+    if (mode === 'gradient') {
+      ST.wpIdx = val;
+      staticEl.style.background = GradWPs[val].bg;
+    } else if (mode === 'image') {
+      ST.wpSrc = val;
+      staticEl.style.background = `url('${val}') center/cover no-repeat`;
+    } else if (mode === 'live') {
+      ST.wpLive = val;
+      staticEl.style.background = '#000';
+      // Задаём размеры canvas равными размеру рабочего стола
+      const W = desk.offsetWidth  || window.innerWidth;
+      const H = desk.offsetHeight || (window.innerHeight - 52);
+      canvas.width  = W;
+      canvas.height = H;
+      canvas.style.width  = W + 'px';
+      canvas.style.height = H + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, W, H);
+      if (LW[val]) LW[val](canvas, ctx);
+      else notify('Обои', 'Эффект не найден: ' + val);
+    }
+    // Обновить выделения
+    document.querySelectorAll('.wp-th[data-i]').forEach(t => t.classList.toggle('wsel', mode === 'gradient' && parseInt(t.dataset.i) === val));
+    document.querySelectorAll('.live-card').forEach(c => c.classList.toggle('wsel', mode === 'live' && c.dataset.lk === val));
+    document.querySelectorAll('.cust-th').forEach(t => t.classList.toggle('wsel', mode === 'image' && t.dataset.src === val));
+  },
+
+  // Получить мета-данные любого приложения (системного или пользовательского)
+  _getApp(id) {
+    let app = Catalog.find(a => a.id === id);
+    if (!app) {
+      const ca = CustomApps.list.find(a => a.id === id);
+      if (ca) app = { id: ca.id, name: ca.name, icon: ca.icon, sys: false, custom: true };
+    }
+    return app || null;
+  },
+
+  renderIcons() {
+    const grid = document.getElementById('icons-grid');
+    grid.innerHTML = '';
+    ST.installed.forEach(id => {
+      const app = this._getApp(id); if (!app) return;
+      const el = document.createElement('div');
+      el.className = 'dicon'; el.dataset.appid = id;
+      el.innerHTML = `<div class="dicon-em">${app.icon}</div><span class="dicon-lbl">${app.name}</span>`;
+      if (app.custom) {
+        // Бейдж "своё"
+        el.innerHTML += `<span style="position:absolute;top:2px;right:2px;background:var(--a3);color:#fff;font-size:8px;font-weight:700;border-radius:4px;padding:1px 4px;line-height:1.4">МОЁ</span>`;
+      }
+      el.addEventListener('dblclick', () => Apps.open(id));
+      el.addEventListener('contextmenu', e => {
+        e.preventDefault(); e.stopPropagation();
+        UI.showCtx(e, [
+          { icon: '▶', label: 'Открыть', fn: () => Apps.open(id) },
+          null,
+          { icon: '🗑', label: 'Удалить ярлык', danger: true, fn: () => { el.remove(); notify('Рабочий стол', `Ярлык «${app.name}» удалён`); } },
+          ...(app.custom ? [{ icon: '🗂', label: 'Удалить приложение', danger: true, fn: () => CustomApps.remove(id) }] : []),
+          ...(!app.sys && !app.custom ? [{ icon: '🗂', label: 'Удалить приложение', danger: true, fn: () => UI.uninstall(id) }] : []),
+        ]);
+      });
+      let dx = 0, dy = 0;
+      el.setAttribute('draggable', 'true');
+      el.addEventListener('dragstart', e => { const r = el.getBoundingClientRect(); dx = e.clientX - r.left; dy = e.clientY - r.top; el.style.opacity = '.45'; });
+      el.addEventListener('dragend', e => { el.style.opacity = ''; el.style.position = 'absolute'; el.style.left = (e.clientX - dx) + 'px'; el.style.top = (e.clientY - dy) + 'px'; });
+      grid.appendChild(el);
+    });
+  },
+
+  renderStartMenu() { this.filterApps(''); },
+
+  filterApps(q) {
+    const grid = document.getElementById('sm-grid'); grid.innerHTML = '';
+    ST.installed.forEach(id => {
+      const app = this._getApp(id); if (!app) return;
+      if (q && !app.name.toLowerCase().includes(q.toLowerCase())) return;
+      const btn = document.createElement('button'); btn.className = 'sm-btn';
+      btn.innerHTML = `<span class="sm-btn-ico">${app.icon}</span><span>${app.name}${app.custom ? ' <span style="font-size:9px;color:var(--a3);font-weight:700">МОЁ</span>' : ''}</span>`;
+      btn.addEventListener('click', () => { Apps.open(id); this.toggleStart(); });
+      grid.appendChild(btn);
+    });
+  },
+
+  toggleStart() { document.getElementById('smenu').classList.toggle('sopen'); },
+
+  install(id, onDone) {
+    if (ST.installed.includes(id)) { notify('Магазин', 'Уже установлено'); return; }
+    notify('Установка', 'Устанавливаем…');
+    setTimeout(() => {
+      ST.installed.push(id);
+      localStorage.setItem('kos_apps', JSON.stringify(ST.installed));
+      this.renderIcons(); this.renderStartMenu();
+      const app = Catalog.find(a => a.id === id);
+      notify('Установлено', `✓ ${app?.name} готова к использованию`);
+      if (onDone) onDone();
+    }, 1100 + Math.random() * 900);
+  },
+
+  uninstall(id) {
+    const app = Catalog.find(a => a.id === id);
+    if (app?.sys) { notify('Система', 'Системные приложения нельзя удалить'); return; }
+    ST.installed = ST.installed.filter(i => i !== id);
+    localStorage.setItem('kos_apps', JSON.stringify(ST.installed));
+    WM.close(id); WM.close(id + '-1'); // на случай нескольких экземпляров
+    this.renderIcons(); this.renderStartMenu();
+    notify('Удалено', `🗑 ${app?.name} удалена`);
+  },
+
+  _clock() {
+    const el = document.getElementById('clock');
+    const upd = () => {
+      const n = new Date();
+      el.innerHTML = `<div>${n.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' })}</div><div style="font-size:10px;opacity:.6">${n.toLocaleDateString('ru', { day: '2-digit', month: '2-digit' })}</div>`;
+    };
+    upd(); setInterval(upd, 1000);
+  },
+
+  _ctx() {
+    document.getElementById('desktop').addEventListener('contextmenu', e => {
+      if (e.target.closest('.dicon') || e.target.closest('.win') || e.target.closest('.wgt')) return;
+      e.preventDefault();
+      UI.showCtx(e, [
+        { icon: '🖼', label: 'Обои и заставки', fn: () => Apps.wallpapers() },
+        { icon: '🧩', label: 'Виджеты',         fn: () => Apps.widgetMgr() },
+        { icon: '🛒', label: 'Магазин',         fn: () => Apps.store() },
+        { icon: '📦', label: 'Мои приложения',  fn: () => CustomApps.openManager() },
+        null,
+        { icon: '⚙',  label: 'Параметры',       fn: () => Apps.settings() },
+        { icon: '🔄', label: 'Обновить',         fn: () => { UI.renderIcons(); notify('Рабочий стол', 'Обновлено'); } },
+      ]);
+    });
+  },
+
+  showCtx(e, items) {
+    const menu = document.getElementById('ctx'); menu.innerHTML = '';
+    items.forEach(item => {
+      if (!item) { const s = document.createElement('div'); s.className = 'csep'; menu.appendChild(s); return; }
+      const d = document.createElement('div'); d.className = 'ci' + (item.danger ? ' cdanger' : '');
+      d.innerHTML = `<span>${item.icon || ''}</span><span>${item.label}</span>`;
+      d.addEventListener('click', () => { item.fn(); menu.classList.remove('copen'); });
+      menu.appendChild(d);
+    });
+    menu.classList.add('copen');
+    let x = e.clientX, y = e.clientY;
+    menu.style.left = x + 'px'; menu.style.top = y + 'px';
+    requestAnimationFrame(() => {
+      const r = menu.getBoundingClientRect();
+      if (r.right > innerWidth) menu.style.left = (x - r.width) + 'px';
+      if (r.bottom > innerHeight - 60) menu.style.top = (y - r.height) + 'px';
+    });
+  },
+
+  powerOff() {
+    document.body.innerHTML = `<div style="position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font-family:monospace">
+      <div style="font-size:52px;font-weight:900;background:linear-gradient(135deg,#00e5ff,#7c4dff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">КИБЕР ОС</div>
+      <div style="font-size:13px;letter-spacing:5px;color:#333">СИСТЕМА ЗАВЕРШЕНА</div>
+      <button onclick="location.reload()" style="margin-top:20px;padding:10px 26px;background:#111;border:1px solid #333;border-radius:8px;color:#555;cursor:pointer;font-size:13px" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#555'">↺ Перезагрузить</button>
+    </div>`;
+  }
+};
+
+// ════════════════════════════════════════════
+// ПРИЛОЖЕНИЯ
+// ════════════════════════════════════════════
+const Apps = {
+  open(id) {
+    if (!ST.installed.includes(id)) { notify('Система', 'Приложение не установлено. Откройте Магазин.'); return; }
+    const map = { computer: 'myPC', notepad: 'notepad', game: 'minesweeper', settings: 'settings', store: 'store', wallpapers: 'wallpapers', widgets: 'widgetMgr', calculator: 'calculator', wclock: 'worldClock', paint: 'paint', terminal: 'terminal', music: 'music' };
+    const fn = map[id];
+    if (fn && this[fn]) this[fn]();
+    else notify('Приложение', `${id} — в разработке`);
+  },
+
+  // ─── МАГАЗИН ───
+  store() {
+    const rebuild = () => {
+      const win = document.getElementById('app-store'); if (!win) return;
+      const activeTab = win.querySelector('.tab-btn.tact')?.dataset.tab || 'all';
+      const grid = win.querySelector('#store-items'); if (!grid) return;
+      const items = activeTab === 'sys' ? Catalog.filter(a => a.sys) : activeTab === 'third' ? Catalog.filter(a => !a.sys) : Catalog;
+      grid.innerHTML = items.map(a => {
+        const isIns = ST.installed.includes(a.id);
+        const btnHtml = a.sys
+          ? `<button class="btn-inst sys" disabled>Системное</button>`
+          : isIns
+            ? `<button class="btn-inst remv" onclick="UI.uninstall('${a.id}');setTimeout(rebuild,50)">Удалить</button>`
+            : `<button class="btn-inst inst" onclick="doInstall('${a.id}',this)">Установить</button>`;
+        return `<div class="card"><div class="card-ico">${a.icon}</div><div class="card-name">${a.name}</div><div class="card-desc">${a.desc}</div><div class="card-foot"><span class="card-sz">${a.size}</span>${btnHtml}</div></div>`;
+      }).join('');
+    };
+
+    window.rebuild = rebuild;
+    window.doInstall = (id, btn) => {
+      btn.textContent = '⏳…'; btn.disabled = true; btn.className = 'btn-inst sys';
+      const prog = document.createElement('div'); prog.className = 'inst-prog'; prog.innerHTML = '<div class="inst-prog-fill" id="ipf-' + id + '" style="width:0"></div>';
+      btn.parentElement.appendChild(prog);
+      let p = 0; const t = setInterval(() => { p += 6 + Math.random() * 14; const el = document.getElementById('ipf-' + id); if (el) el.style.width = Math.min(p, 95) + '%'; if (p >= 100) clearInterval(t); }, 140);
+      UI.install(id, () => setTimeout(rebuild, 300));
+    };
+
+    const html = `<div class="app-pad">
+      <div class="row-tabs">
+        <button class="tab-btn tact" data-tab="all" onclick="storeTab(this,'all')">🌐 Все (${Catalog.length})</button>
+        <button class="tab-btn" data-tab="third" onclick="storeTab(this,'third')">📦 Сторонние</button>
+        <button class="tab-btn" data-tab="sys" onclick="storeTab(this,'sys')">🔒 Системные</button>
+      </div>
+      <div class="grid2" id="store-items"></div>
+    </div>`;
+
+    window.storeTab = (el, tab) => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tact')); el.classList.add('tact');
+      rebuild();
+    };
+
+    WM.create({ id: 'app-store', title: 'Магазин приложений', icon: '🛒', w: 660, h: 480, html });
+    requestAnimationFrame(rebuild);
+  },
+
+  // ─── ОБОИ ───
+  wallpapers() {
+    const gradGrid = GradWPs.map((w, i) => `<div class="wp-th ${ST.wpMode==='gradient'&&ST.wpIdx===i?'wsel':''}" data-i="${i}" style="background:${w.bg}" onclick="UI.setWallpaper('gradient',${i})" title="${w.name}"><span>${w.name}</span></div>`).join('');
+    const liveGrid = LiveWPs.map(w => `<div class="live-card ${ST.wpMode==='live'&&ST.wpLive===w.key?'wsel':''}" data-lk="${w.key}" style="background:${w.bg}" onclick="UI.setWallpaper('live','${w.key}')" title="${w.name}"><span>${w.name}</span></div>`).join('');
+    const custGrid = () => ST.customWP.map(src => `<img class="cust-th ${ST.wpMode==='image'&&ST.wpSrc===src?'wsel':''}" src="${src}" data-src="${src}" onclick="UI.setWallpaper('image','${src}')">`).join('');
+
+    const html = `<div class="app-pad">
+      <div class="row-tabs">
+        <button class="tab-btn tact" data-wp-tab="grad" onclick="wpSwitchTab(this,'grad')">🎨 Градиенты</button>
+        <button class="tab-btn" data-wp-tab="live" onclick="wpSwitchTab(this,'live')">✨ Живые</button>
+        <button class="tab-btn" data-wp-tab="custom" onclick="wpSwitchTab(this,'custom')">📁 С устройства</button>
+        <button class="tab-btn" data-wp-tab="dim" onclick="wpSwitchTab(this,'dim')">🔆 Затемнение</button>
+      </div>
+      <div id="wp-tab-grad"><div class="sec-title">Выберите стиль</div><div class="wp-grid">${gradGrid}</div></div>
+      <div id="wp-tab-live" style="display:none"><div class="sec-title">Живые заставки</div><div class="live-grid">${liveGrid}</div></div>
+      <div id="wp-tab-custom" style="display:none">
+        <div class="sec-title">Изображение с устройства</div>
+        <div class="upload-zone" id="wp-dropzone" onclick="document.getElementById('wp-filein').click()" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="wpDrop(event)">
+          <div style="font-size:40px">🖼</div>
+          <p>Нажмите или перетащите изображение</p>
+          <small>JPG, PNG, WebP, GIF — любой размер</small>
+        </div>
+        <input type="file" id="wp-filein" accept="image/*" multiple style="display:none" onchange="wpLoad(this)">
+        <div id="cust-grid" class="cust-thumbs">${custGrid()}</div>
+        ${ST.customWP.length ? `<button onclick="ST.customWP=[];localStorage.removeItem('kos_cwp');document.getElementById('cust-grid').innerHTML='';notify('Обои','Очищено')" style="margin-top:8px;padding:5px 12px;background:rgba(255,96,88,.12);border:1px solid rgba(255,96,88,.3);border-radius:6px;color:#ff6058;cursor:pointer;font-size:11px">🗑 Очистить все</button>` : ''}
+      </div>
+      <div id="wp-tab-dim" style="display:none">
+        <div class="sec-title">Затемнение рабочего стола</div>
+        <div style="display:flex;flex-direction:column;gap:11px;margin-top:8px">
+          ${[0,20,40,60,80].map(v => `<div style="display:flex;align-items:center;gap:12px">
+            <div style="width:50px;height:32px;border-radius:6px;background:rgba(0,0,0,${v/100});border:2px solid ${ST.dim===v?'var(--a)':'var(--bd)'};cursor:pointer;transition:border-color .15s" onclick="wpSetDim(${v})" id="dim-${v}"></div>
+            <span style="font-size:12px;color:var(--tx2)">${v}% затемнение</span>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+
+    window.wpSwitchTab = (el, tab) => {
+      document.querySelectorAll('[data-wp-tab]').forEach(b => b.classList.remove('tact')); el.classList.add('tact');
+      ['grad', 'live', 'custom', 'dim'].forEach(t => { const s = document.getElementById('wp-tab-' + t); if (s) s.style.display = t === tab ? 'block' : 'none'; });
+    };
+    window.wpLoad = (input) => {
+      Array.from(input.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const src = e.target.result;
+          if (!ST.customWP.includes(src)) {
+            ST.customWP.push(src); ST.customWP = ST.customWP.slice(-6);
+            try { localStorage.setItem('kos_cwp', JSON.stringify(ST.customWP)); } catch (err) {}
+          }
+          UI.setWallpaper('image', src);
+          const cg = document.getElementById('cust-grid');
+          if (cg) cg.innerHTML = ST.customWP.map(s => `<img class="cust-th ${s===src?'wsel':''}" src="${s}" data-src="${s}" onclick="UI.setWallpaper('image','${s}')">`).join('');
+          notify('Обои', 'Изображение установлено ✓');
+        };
+        reader.readAsDataURL(file);
+      });
+    };
+    window.wpDrop = (e) => { e.preventDefault(); document.getElementById('wp-dropzone').classList.remove('drag-over'); if (e.dataTransfer.files.length) { const inp = document.getElementById('wp-filein'); inp.files = e.dataTransfer.files; wpLoad(inp); } };
+    window.wpSetDim = (v) => {
+      ST.dim = v;
+      document.getElementById('wp-overlay').style.background = v ? `rgba(0,0,0,${v/100})` : 'transparent';
+      [0,20,40,60,80].forEach(dv => { const el = document.getElementById('dim-' + dv); if (el) el.style.borderColor = dv === v ? 'var(--a)' : 'var(--bd)'; });
+    };
+
+    WM.create({ id: 'app-wallpapers', title: 'Обои и заставки', icon: '🖼', w: 600, h: 500, html });
+  },
+
+  // ─── ВИДЖЕТЫ ───
+  widgetMgr() {
+    const isAdded = (defId) => Object.values(Wgt.active).includes(defId);
+    const html = `<div class="app-pad">
+      <div class="sec-title" style="margin-bottom:12px">Виджеты рабочего стола</div>
+      <div class="grid2">
+        ${Object.entries(Wgt.defs).map(([k, d]) => `<div class="wgt-card">
+          <div class="wgt-card-ico">${d.icon}</div>
+          <div class="wgt-card-name">${d.name}</div>
+          <div class="wgt-card-desc">${d.desc}</div>
+          <button class="btn-add ${isAdded(k) ? 'added' : ''}" data-wdef="${k}" onclick="wgtToggle('${k}',this)">${isAdded(k) ? '✕ Убрать' : '+ Добавить'}</button>
+        </div>`).join('')}
+      </div>
+      <div style="margin-top:14px;padding:11px;background:rgba(255,255,255,0.03);border:1px solid var(--bd);border-radius:8px;font-size:11px;color:var(--tx2);line-height:1.8">
+        💡 Перетаскивайте виджеты мышью. Позиции сохраняются автоматически.
+      </div>
+    </div>`;
+
+    window.wgtToggle = (defId, btn) => {
+      if (Object.values(Wgt.active).includes(defId)) {
+        Object.entries(Wgt.active).filter(([, v]) => v === defId).forEach(([uid]) => Wgt.remove(uid));
+        btn.textContent = '+ Добавить'; btn.classList.remove('added');
+      } else {
+        Wgt.add(defId); btn.textContent = '✕ Убрать'; btn.classList.add('added');
+      }
+    };
+
+    WM.create({ id: 'app-widgets', title: 'Менеджер виджетов', icon: '🧩', w: 480, h: 460, html });
+  },
+
+  // ─── МОЙ КОМПЬЮТЕР ───
+  myPC() {
+    const id = 'app-pc-' + Date.now();
+    const folders = [{ n: 'Документы', c: '#ffbd44' }, { n: 'Загрузки', c: '#00d4ff' }, { n: 'Изображения', c: '#ff6fde' }, { n: 'Музыка', c: '#00ca4e' }, { n: 'Видео', c: '#ff6058' }, { n: 'Рабочий стол', c: '#7c4dff' }];
+    const files = [{ n: 'отчёт.txt', c: '#8899bb', e: '📄' }, { n: 'данные.csv', c: '#00ca4e', e: '📊' }, { n: 'config.json', c: '#ffbd44', e: '⚙' }, { n: 'system.log', c: '#ff6058', e: '📋' }];
+    const html = `<div style="display:flex;flex-direction:column;height:100%">
+      <div class="fm-tb">
+        <button class="fm-tb-btn">◀</button>
+        <button class="fm-tb-btn">▶</button>
+        <div class="fm-path" id="fm-path-${id}">Этот ПК \\ </div>
+        <button class="fm-tb-btn" onclick="notify('Файлы','Обновлено')">🔄</button>
+      </div>
+      <div class="fm-body">
+        <div class="fm-side">
+          ${['🖥 Этот ПК', '📁 Документы', '⬇ Загрузки', '🖼 Изображения', '🗑 Корзина'].map((s, i) =>
+            `<div class="fm-si ${i===0?'fma':''}" onclick="document.querySelectorAll('.fm-si').forEach(x=>x.classList.remove('fma'));this.classList.add('fma');document.getElementById('fm-path-${id}').textContent='${s.replace(/[^а-яА-Яa-zA-Z ]/g,'').trim()}\\\\ '">${s}</div>`
+          ).join('')}
+        </div>
+        <div class="fm-files">
+          ${folders.map(f => `<div class="fm-file" ondblclick="notify('Файлы','Открываю «${f.n}»')"><div class="fm-file-ico" style="filter:drop-shadow(0 2px 6px ${f.c})">📁</div><span class="fm-file-nm">${f.n}</span></div>`).join('')}
+          ${files.map(f => `<div class="fm-file" ondblclick="notify('Файлы','Открываю ${f.n}')"><div class="fm-file-ico">${f.e}</div><span class="fm-file-nm">${f.n}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+    WM.create({ id, title: 'Мой компьютер', icon: '🖥', w: 700, h: 460, html });
+  },
+
+  // ─── БЛОКНОТ ───
+  notepad() {
+    const id = 'app-np-' + Date.now();
+    const saved = localStorage.getItem('kos_notepad') || '';
+    const html = `<div style="display:flex;flex-direction:column;height:100%">
+      <div class="np-bar">
+        <button class="np-btn" onclick="npSave('${id}')">💾 Сохранить</button>
+        <button class="np-btn" onclick="npLoad('${id}')">📂 Открыть</button>
+        <button class="np-btn" onclick="npClear('${id}')">🗑 Очистить</button>
+        <button class="np-btn" onclick="npDown('${id}')">⬇ Скачать</button>
+      </div>
+      <textarea class="np-ta" id="np-ta-${id}" placeholder="Начните вводить…" oninput="npStat('${id}')">${saved}</textarea>
+      <div class="np-stat"><span id="np-l-${id}">Строк: ${saved.split('\n').length}</span><span id="np-w-${id}">Слов: ${saved.trim() ? saved.trim().split(/\s+/).length : 0}</span></div>
+    </div>`;
+    window.npSave = (wid) => { const t = document.getElementById('np-ta-' + wid); if (t) { localStorage.setItem('kos_notepad', t.value); notify('Блокнот', 'Сохранено ✓'); } };
+    window.npLoad = (wid) => { const t = document.getElementById('np-ta-' + wid); if (t) t.value = localStorage.getItem('kos_notepad') || ''; };
+    window.npClear = (wid) => { if (confirm('Очистить документ?')) { const t = document.getElementById('np-ta-' + wid); if (t) t.value = ''; } };
+    window.npDown = (wid) => { const t = document.getElementById('np-ta-' + wid); if (!t) return; const a = document.createElement('a'); a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(t.value); a.download = 'document.txt'; a.click(); };
+    window.npStat = (wid) => { const t = document.getElementById('np-ta-' + wid); if (!t) return; const l = document.getElementById('np-l-' + wid), w = document.getElementById('np-w-' + wid); if (l) l.textContent = 'Строк: ' + t.value.split('\n').length; if (w) w.textContent = 'Слов: ' + (t.value.trim() ? t.value.trim().split(/\s+/).length : 0); };
+    WM.create({ id, title: 'Блокнот', icon: '📝', w: 580, h: 440, html });
+  },
+
+  // ─── КАЛЬКУЛЯТОР ───
+  calculator() {
+    let cur = '0', expr = '', wait = false;
+    const id = 'app-calc';
+    const html = `<div class="calc-wrap">
+      <div class="calc-disp"><div class="calc-expr" id="cexp"></div><div class="calc-val" id="cval">0</div></div>
+      <div class="calc-grid">
+        ${[['C','±','%','÷'],['7','8','9','×'],['4','5','6','−'],['1','2','3','+'],[['0',2],'.','+/-','=']].map(row => row.map(b => {
+          const v = Array.isArray(b) ? b[0] : b;
+          const span = Array.isArray(b) ? b[1] : 1;
+          const cls = v === '=' ? 'ceq' : ['÷','×','−','+'].includes(v) ? 'cop' : '';
+          return `<button class="cb ${cls}" style="${span>1?'grid-column:span '+span:''}" onclick="calcKey('${v}')">${v}</button>`;
+        }).join('')).join('')}
+      </div>
+    </div>`;
+    window.calcKey = (v) => {
+      const dv = document.getElementById('cval'), de = document.getElementById('cexp');
+      if (!dv) return;
+      if (v === 'C') { cur = '0'; expr = ''; wait = false; }
+      else if (v === '=') {
+        try { const r = Function('"use strict";return (' + (expr + cur).replace('÷','/').replace('×','*').replace('−','-') + ')')(); expr = expr + cur + '='; cur = parseFloat(r.toFixed(10)).toString(); wait = true; }
+        catch { cur = 'Ошибка'; expr = ''; }
+      }
+      else if (['÷','×','−','+'].includes(v)) { expr = cur + v; cur = '0'; wait = false; }
+      else if (v === '%') { cur = (parseFloat(cur) / 100).toString(); }
+      else if (v === '±' || v === '+/-') { cur = (parseFloat(cur) * -1).toString(); }
+      else if (v === '.') { if (!cur.includes('.')) cur += '.'; }
+      else { cur = (wait || cur === '0') ? v : cur + v; wait = false; }
+      dv.textContent = cur; if (de) de.textContent = expr;
+    };
+    WM.create({ id, title: 'Калькулятор', icon: '🧮', w: 290, h: 410, html });
+  },
+
+  // ─── МИРОВЫЕ ЧАСЫ ───
+  worldClock() {
+    const zones = [
+      { city: 'Москва', tz: 'Europe/Moscow', flag: '🇷🇺' },
+      { city: 'Лондон', tz: 'Europe/London', flag: '🇬🇧' },
+      { city: 'Нью-Йорк', tz: 'America/New_York', flag: '🇺🇸' },
+      { city: 'Токио', tz: 'Asia/Tokyo', flag: '🇯🇵' },
+      { city: 'Пекин', tz: 'Asia/Shanghai', flag: '🇨🇳' },
+      { city: 'Дубай', tz: 'Asia/Dubai', flag: '🇦🇪' },
+      { city: 'Сидней', tz: 'Australia/Sydney', flag: '🇦🇺' },
+      { city: 'Берлин', tz: 'Europe/Berlin', flag: '🇩🇪' },
+    ];
+    const html = `<div class="app-pad">${zones.map(z => `<div class="wc-item"><span style="font-size:24px">${z.flag}</span><div class="wc-city"><div class="wc-city-name">${z.city}</div><div class="wc-city-tz">${z.tz}</div></div><div class="wc-time" id="wct-${z.city.replace(/\s/g,'')}">--:--:--</div></div>`).join('')}</div>`;
+    WM.create({ id: 'app-wclock', title: 'Мировые часы', icon: '🕐', w: 360, h: 500, html });
+    const upd = () => zones.forEach(z => { const el = document.getElementById('wct-' + z.city.replace(/\s/g,'')); if (el) el.textContent = new Date().toLocaleTimeString('ru', { timeZone: z.tz, hour: '2-digit', minute: '2-digit', second: '2-digit' }); });
+    upd(); const t = setInterval(upd, 1000);
+    setTimeout(() => clearInterval(t), 86400000);
+  },
+
+  // ─── PAINT ───
+  paint() {
+    const id = 'app-paint-' + Date.now();
+    const html = `<div style="display:flex;flex-direction:column;height:100%">
+      <div class="paint-bar">
+        <input type="color" id="pc-${id}" value="#00e5ff" style="width:30px;height:26px;border:none;cursor:pointer;border-radius:4px;padding:0" title="Цвет">
+        <span style="font-size:11px;color:var(--tx2)">Размер:</span>
+        <input type="range" id="ps-${id}" min="1" max="40" value="6" style="width:70px">
+        <select id="pt-${id}" style="background:rgba(255,255,255,0.07);border:1px solid var(--bd);border-radius:5px;color:var(--tx);padding:3px 6px;font-size:11px;cursor:pointer">
+          <option value="pen">✏ Кисть</option><option value="eraser">🧹 Ластик</option>
+        </select>
+        <button class="np-btn" onclick="paintClear('${id}')">🗑 Очистить</button>
+        <button class="np-btn" onclick="paintSave('${id}')">⬇ PNG</button>
+      </div>
+      <canvas id="pcanv-${id}" class="paint-canvas"></canvas>
+    </div>`;
+    WM.create({ id, title: 'Рисование', icon: '🎨', w: 680, h: 480, html });
+
+    window.paintClear = (wid) => { const c = document.getElementById('pcanv-' + wid); if (!c) return; const x = c.getContext('2d'); x.fillStyle = '#0a0e1a'; x.fillRect(0, 0, c.width, c.height); };
+    window.paintSave = (wid) => { const c = document.getElementById('pcanv-' + wid); if (!c) return; const a = document.createElement('a'); a.href = c.toDataURL(); a.download = 'drawing.png'; a.click(); };
+
+    requestAnimationFrame(() => {
+      const cv = document.getElementById('pcanv-' + id); if (!cv) return;
+      cv.width = cv.offsetWidth; cv.height = cv.offsetHeight;
+      const cx = cv.getContext('2d'); cx.fillStyle = '#0a0e1a'; cx.fillRect(0, 0, cv.width, cv.height);
+      let drawing = false, lx = 0, ly = 0;
+      const pos = (e) => { const r = cv.getBoundingClientRect(), s = e.touches ? e.touches[0] : e; return { x: s.clientX - r.left, y: s.clientY - r.top }; };
+      const start = (e) => { drawing = true; const p = pos(e); lx = p.x; ly = p.y; };
+      const draw = (e) => {
+        if (!drawing) return;
+        const p = pos(e), tool = document.getElementById('pt-' + id)?.value, color = document.getElementById('pc-' + id)?.value, size = document.getElementById('ps-' + id)?.value;
+        cx.strokeStyle = tool === 'eraser' ? '#0a0e1a' : color;
+        cx.lineWidth = size; cx.lineCap = 'round'; cx.lineJoin = 'round';
+        cx.beginPath(); cx.moveTo(lx, ly); cx.lineTo(p.x, p.y); cx.stroke();
+        lx = p.x; ly = p.y;
+      };
+      const end = () => { drawing = false; };
+      cv.addEventListener('mousedown', start); cv.addEventListener('mousemove', draw); cv.addEventListener('mouseup', end); cv.addEventListener('mouseleave', end);
+      cv.addEventListener('touchstart', e => { e.preventDefault(); start(e); }, { passive: false });
+      cv.addEventListener('touchmove', e => { e.preventDefault(); draw(e); }, { passive: false });
+      cv.addEventListener('touchend', end);
+    });
+  },
+
+  // ─── ТЕРМИНАЛ ───
+  terminal() {
+    const id = 'app-term';
+    const cmds = {
+      help: () => 'Команды:\n  help, ls, date, ver, apps, echo <текст>, clear',
+      ls: () => '📁 Документы\n📁 Загрузки\n📁 Изображения\n🎵 Музыка\n📄 отчёт.txt\n📊 данные.csv',
+      date: () => new Date().toLocaleString('ru'),
+      ver: () => 'КиберОС Web Edition 3.0',
+      apps: () => ST.installed.map(a => { const d = Catalog.find(x => x.id === a); return `${d?.icon || '📦'} ${d?.name || a}`; }).join('\n'),
+      clear: () => '__CLEAR__',
+    };
+    const html = `<div style="display:flex;flex-direction:column;height:100%;background:#000;">
+      <div class="term-out" id="tout-${id}">КиберОС Terminal 3.0\nВведите 'help' для справки.\n\n</div>
+      <div class="term-in-row"><span class="term-prompt">user@kyberos:~$</span><input class="term-input" id="tinp-${id}" placeholder="команда…" onkeydown="termKey(event,'${id}')"></div>
+    </div>`;
+    window.termKey = (e, wid) => {
+      if (e.key !== 'Enter') return;
+      const inp = document.getElementById('tinp-' + wid), out = document.getElementById('tout-' + wid);
+      if (!inp || !out) return;
+      const val = inp.value.trim(); inp.value = '';
+      out.textContent += `user@kyberos:~$ ${val}\n`;
+      const parts = val.split(' ');
+      const fn = cmds[parts[0]];
+      if (fn) { const r = fn(); if (r === '__CLEAR__') out.textContent = ''; else out.textContent += r + '\n'; }
+      else if (val.startsWith('echo ')) out.textContent += val.slice(5) + '\n';
+      else if (val) out.textContent += `bash: ${parts[0]}: команда не найдена\n`;
+      out.textContent += '\n'; out.scrollTop = out.scrollHeight;
+    };
+    WM.create({ id, title: 'Терминал', icon: '⌨', w: 560, h: 400, html });
+    requestAnimationFrame(() => { const inp = document.getElementById('tinp-' + id); if (inp) inp.focus(); });
+  },
+
+  // ─── МЕДИАПЛЕЕР ───
+  music() {
+    const id = 'app-music';
+    const tracks = [{ t: 'Синтез Ночи', a: 'КиберВолна', d: '3:42' }, { t: 'Neon Dreams', a: 'Synthwave', d: '4:15' }, { t: 'Dark Pulse', a: 'ElectroBeat', d: '3:58' }, { t: 'Город Огней', a: 'Ретро FM', d: '4:30' }, { t: 'Midnight Run', a: 'RetroWave', d: '5:12' }];
+    let ti = 0, playing = false, prog = 0, pInt = null;
+    const rend = () => {
+      const win = document.getElementById(id); if (!win) return;
+      const body = win.querySelector('.wbody'); if (!body) return;
+      body.innerHTML = `<div class="app-pad" style="display:flex;flex-direction:column;gap:14px">
+        <div style="text-align:center;padding:18px;background:linear-gradient(135deg,rgba(0,229,255,.08),rgba(124,77,255,.08));border:1px solid var(--bd);border-radius:12px">
+          <div style="font-size:48px;margin-bottom:7px">🎵</div>
+          <div style="font-size:calc(16px * var(--zoom));font-weight:900;color:var(--tx)">${tracks[ti].t}</div>
+          <div style="font-size:calc(12px * var(--zoom));color:var(--tx2);margin-top:3px">${tracks[ti].a}</div>
+        </div>
+        <div><div style="height:4px;background:rgba(255,255,255,.1);border-radius:2px;overflow:hidden;margin-bottom:5px"><div style="height:100%;background:linear-gradient(90deg,var(--a),var(--a3));border-radius:2px;width:${prog}%" id="mpf"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--tx2)"><span>0:${String(Math.round(prog*.42)).padStart(2,'0')}</span><span>${tracks[ti].d}</span></div></div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:14px">
+          <button onclick="mpPrev()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--tx);transition:transform .1s" onmousedown="this.style.transform='scale(.85)'" onmouseup="this.style.transform=''">⏮</button>
+          <button onclick="mpPlay()" style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--a),var(--a3));border:none;font-size:18px;cursor:pointer;color:#000;font-weight:900;transition:transform .1s" onmousedown="this.style.transform='scale(.9)'" onmouseup="this.style.transform=''">${playing ? '⏸' : '▶'}</button>
+          <button onclick="mpNext()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--tx);transition:transform .1s" onmousedown="this.style.transform='scale(.85)'" onmouseup="this.style.transform=''">⏭</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          ${tracks.map((t, i) => `<div onclick="ti=${i};prog=0;rend()" style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;cursor:pointer;background:${i===ti?'rgba(0,229,255,.1)':'transparent'};border:1px solid ${i===ti?'var(--bda)':'transparent'};transition:all .13s">
+            <span>${i===ti&&playing?'🎵':'🎧'}</span>
+            <div style="flex:1"><div style="font-size:calc(12px * var(--zoom));color:var(--tx);font-weight:${i===ti?700:400}">${t.t}</div><div style="font-size:10px;color:var(--tx2)">${t.a}</div></div>
+            <span style="font-size:10px;color:var(--tx2)">${t.d}</span>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    };
+    window.mpPlay = () => { playing = !playing; if (playing) { pInt = setInterval(() => { prog = Math.min(prog + 0.4, 100); if (prog >= 100) { prog = 0; ti = (ti + 1) % tracks.length; } const el = document.getElementById('mpf'); if (el) el.style.width = prog + '%'; }, 200); } else clearInterval(pInt); rend(); };
+    window.mpPrev = () => { ti = (ti - 1 + tracks.length) % tracks.length; prog = 0; rend(); };
+    window.mpNext = () => { ti = (ti + 1) % tracks.length; prog = 0; rend(); };
+    window.rend = rend;
+
+    WM.create({ id, title: 'Медиаплеер', icon: '🎵', w: 350, h: 570, html: '<div class="wbody"></div>' });
+    requestAnimationFrame(rend);
+  },
+
+  // ─── САПЁР ───
+  minesweeper() {
+    const id = 'app-saper-' + Date.now();
+    const R = 9, C = 9, M = 10;
+    let board, rev, flag, over, won, tStart, tInt, mLeft, lpt;
+    const init = () => {
+      board = Array.from({ length: R }, () => Array(C).fill(0));
+      rev = Array.from({ length: R }, () => Array(C).fill(false));
+      flag = Array.from({ length: R }, () => Array(C).fill(false));
+      over = won = false; mLeft = M; tStart = null; clearInterval(tInt);
+      let p = 0;
+      while (p < M) { const r = Math.floor(Math.random() * R), c = Math.floor(Math.random() * C); if (board[r][c] !== -1) { board[r][c] = -1; p++; } }
+      for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) if (board[r][c] !== -1) { let n = 0; for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) { const nr = r+dr, nc = c+dc; if (nr>=0&&nr<R&&nc>=0&&nc<C&&board[nr][nc]===-1) n++; } board[r][c] = n; }
+      render();
+    };
+    const reveal = (r, c) => { if (rev[r][c]||flag[r][c]||over) return; rev[r][c]=true; if(board[r][c]===0) for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){const nr=r+dr,nc=c+dc;if(nr>=0&&nr<R&&nc>=0&&nc<C)reveal(nr,nc);} };
+    const checkWin = () => { for(let r=0;r<R;r++) for(let c=0;c<C;c++) if(!rev[r][c]&&board[r][c]!==-1) return false; return true; };
+    const nc = ['','mn1','mn2','mn3','mn4','mn5','mn6','mn7','mn8'];
+    const render = () => {
+      const win = document.getElementById(id); if (!win) return;
+      const mc = win.querySelector('.ms-mine-c'); if (mc) mc.textContent = mLeft;
+      const grid = win.querySelector('.ms-grid'); if (!grid) return;
+      grid.innerHTML = '';
+      for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) {
+        const cell = document.createElement('div'); cell.className = 'ms-cell';
+        if (rev[r][c]) { cell.classList.add('mr'); if (board[r][c]===-1){cell.textContent='💣';cell.classList.add('mboom');}else if(board[r][c]>0){cell.textContent=board[r][c];cell.classList.add(nc[board[r][c]]);} }
+        else if (flag[r][c]) { cell.textContent='🚩'; cell.classList.add('mf'); }
+        else if (over && board[r][c]===-1) { cell.textContent='💣'; cell.classList.add('mr'); }
+        cell.addEventListener('click', () => {
+          if (over||won||flag[r][c]||rev[r][c]) return;
+          if (!tStart) { tStart=Date.now(); tInt=setInterval(()=>{const tc=document.getElementById('tc-'+id);if(tc)tc.textContent=Math.floor((Date.now()-tStart)/1000);},1000); }
+          if (board[r][c]===-1) { rev[r][c]=true; over=true; clearInterval(tInt); notify('Сапёр','💥 Взрыв!'); }
+          else { reveal(r,c); if(checkWin()){won=true;clearInterval(tInt);const t=Math.floor((Date.now()-tStart)/1000);ST.records.unshift({time:t,date:new Date().toLocaleDateString('ru')});ST.records=ST.records.slice(0,5);localStorage.setItem('kos_rec',JSON.stringify(ST.records));notify('Сапёр',`🎉 Победа за ${t} сек!`);} }
+          render();
+        });
+        cell.addEventListener('contextmenu', e => { e.preventDefault(); if(rev[r][c]||over||won)return; flag[r][c]=!flag[r][c]; mLeft+=flag[r][c]?-1:1; render(); });
+        cell.addEventListener('touchstart', () => { lpt=setTimeout(()=>{if(!rev[r][c]&&!over&&!won){flag[r][c]=!flag[r][c];mLeft+=flag[r][c]?-1:1;render();}lpt=null;},600); },{passive:true});
+        cell.addEventListener('touchend', () => { clearTimeout(lpt); lpt=null; });
+        grid.appendChild(cell);
+      }
+      // Оверлей
+      const existing = win.querySelector('.game-over-overlay'); if (existing) existing.remove();
+      if (over || won) {
+        const ov = document.createElement('div'); ov.className='game-over-overlay';
+        ov.innerHTML=`<div class="go-text ${won?'go-won':'go-lost'}">${won?'🎉 ПОБЕДА!':'💥 ВЗРЫВ!'}</div>
+          <button onclick="msRestart('${id}')" style="padding:8px 20px;background:linear-gradient(135deg,var(--a),var(--a3));border:none;border-radius:8px;font-weight:700;font-size:calc(13px * var(--zoom));color:#000;cursor:pointer">↺ Заново</button>`;
+        const gz = win.querySelector('.ms-wrap'); if (gz) { gz.style.position='relative'; gz.appendChild(ov); }
+      }
+    };
+    window.msRestart = (wid) => { if (wid !== id) return; clearInterval(tInt); const tc=document.getElementById('tc-'+id);if(tc)tc.textContent='0'; init(); };
+    const html = `<div class="ms-wrap app-pad" style="display:flex;flex-direction:column;align-items:center;gap:12px;height:100%;overflow:auto">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;background:rgba(0,229,255,.08);border:1px solid var(--bd);border-radius:7px;font-size:calc(12px * var(--zoom));font-weight:700;color:var(--a)">💣 <span class="ms-mine-c">${M}</span></div>
+        <button onclick="msRestart('${id}')" style="padding:7px 16px;background:linear-gradient(135deg,var(--a),var(--a3));border:none;border-radius:7px;cursor:pointer;font-weight:700;font-size:calc(12px * var(--zoom));color:#000;transition:transform .1s" onmousedown="this.style.transform='scale(.95)'" onmouseup="this.style.transform=''">↺ Новая</button>
+        <div style="display:flex;align-items:center;gap:6px;padding:5px 12px;background:rgba(0,229,255,.08);border:1px solid var(--bd);border-radius:7px;font-size:calc(12px * var(--zoom));font-weight:700;color:var(--a)">⏱ <span id="tc-${id}">0</span></div>
+      </div>
+      <div class="ms-grid" style="display:grid;grid-template-columns:repeat(${C},1fr);gap:2px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:8px;padding:8px;"></div>
+      <div style="width:100%;max-width:280px;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:8px;padding:10px;">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--a);margin-bottom:7px">🏆 Рекорды</div>
+        ${ST.records.length ? ST.records.map((rec,i)=>`<div style="display:flex;justify-content:space-between;font-size:calc(11px * var(--zoom));color:var(--tx2);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span>#${i+1} ${rec.date}</span><span style="color:var(--tx);font-weight:600">${rec.time} сек</span></div>`).join('') : '<div style="font-size:11px;color:var(--tx2)">Нет рекордов</div>'}
+      </div>
+    </div>`;
+    WM.create({ id, title: 'Сапёр', icon: '💣', w: 430, h: 530, html });
+    requestAnimationFrame(init);
+  },
+
+  // ─── НАСТРОЙКИ ───
+  settings() {
+    const navItems = [{k:'themes',i:'🎨',l:'Темы'},{k:'display',i:'🔍',l:'Масштаб'},{k:'fonts',i:'🔤',l:'Шрифты'},{k:'about',i:'ℹ',l:'О системе'}];
+    const html = `<div class="cfg-body">
+      <div class="cfg-nav">
+        ${navItems.map((n,i)=>`<div class="cfg-ni ${i===0?'cna':''}" onclick="cfgTab(this,'${n.k}')"><span>${n.i}</span><span>${n.l}</span></div>`).join('')}
+      </div>
+      <div class="cfg-cont">
+        <div class="cfg-sec csa" id="cfgs-themes">
+          <div class="cfg-group"><div class="cfg-lbl">Тема оформления</div>
+            <div class="theme-grid">
+              ${Object.entries(Themes).map(([k,t])=>`<div class="theme-card ${ST.theme===k?'tsel':''}" data-theme="${k}" onclick="UI.applyTheme('${k}');document.querySelectorAll('.theme-card').forEach(c=>c.classList.toggle('tsel',c.dataset.theme==='${k}'))">
+                <div class="theme-prev" style="background:${t.prev}"></div>
+                <div class="theme-nm">${t.name}</div>
+              </div>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="cfg-sec" id="cfgs-display">
+          <div class="cfg-group"><div class="cfg-lbl">Масштаб интерфейса</div>
+            <div class="zoom-row">
+              ${[0.8,1,1.2].map(z=>`<div class="zoom-btn ${ST.zoom===z?'zsel':''}" data-z="${z}" onclick="UI.applyZoom(${z})">${Math.round(z*100)}%<br><small style="font-size:10px;font-weight:400">${z===0.8?'Компакт':z===1?'Стандарт':'Крупный'}</small></div>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="cfg-sec" id="cfgs-fonts">
+          <div class="cfg-group"><div class="cfg-lbl">Шрифт интерфейса</div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              ${[["'Segoe UI',system-ui,sans-serif","Системный"],["'Courier New',monospace","Моноширинный"],["'Georgia',serif","С засечками"],["'Trebuchet MS',sans-serif","Округлый"]].map(([f,n])=>`<div onclick="document.documentElement.style.setProperty('--font','${f}');notify('Шрифт','Применено: ${n}')" style="padding:9px 13px;background:rgba(255,255,255,.05);border:1px solid var(--bd);border-radius:8px;cursor:pointer;font-family:${f};font-size:calc(13px * var(--zoom));color:var(--tx);transition:all .13s" onmouseover="this.style.borderColor='var(--bda)'" onmouseout="this.style.borderColor='var(--bd)'">${n} — Привет! Hello! 0123</div>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="cfg-sec" id="cfgs-about">
+          <div class="cfg-group">
+            <div style="padding:18px;background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:10px">
+              <div style="font-size:20px;font-weight:900;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px">КиберОС 3.0</div>
+              <div style="font-size:12px;color:var(--tx2);line-height:2.1">
+                <div>Версия: 3.0 Web Edition</div><div>Движок: Vanilla JS + Canvas API</div>
+                <div>✓ Установка и удаление приложений</div><div>✓ Загрузка обоев с устройства (drag&drop)</div>
+                <div>✓ 7 живых анимированных заставок</div><div>✓ 5 виджетов рабочего стола</div>
+                <div>✓ 12 приложений в каталоге</div>
+                <div style="margin-top:8px;color:var(--a)">© 2025 КиберОС</div>
+              </div>
+            </div>
+            <div style="margin-top:12px;padding:11px;background:rgba(0,0,0,.2);border-radius:8px;font-size:11px;color:var(--tx2);font-family:monospace;line-height:2">
+              <div>Разрешение: ${screen.width}×${screen.height}</div>
+              <div>Окно: ${innerWidth}×${innerHeight}</div>
+              <div>DPR: ${devicePixelRatio}x</div>
+              <div>Тема: ${ST.theme} | Масштаб: ${Math.round(ST.zoom*100)}%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+    window.cfgTab = (el, tab) => {
+      document.querySelectorAll('.cfg-ni').forEach(n => n.classList.remove('cna')); el.classList.add('cna');
+      document.querySelectorAll('.cfg-sec').forEach(s => s.classList.remove('csa'));
+      const sec = document.getElementById('cfgs-' + tab); if (sec) sec.classList.add('csa');
+    };
+    WM.create({ id: 'app-settings', title: 'Параметры системы', icon: '⚙', w: 560, h: 430, html });
+  }
+};
+
+// ════════════════════════════════════════════
+// ЗАПУСК
+// ════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => UI.init(), 120);
+});
+
+window.addEventListener('resize', () => {
+  if (ST.wpMode === 'live' && ST.wpLive) {
+    const desk = document.getElementById('desktop');
+    const cv   = document.getElementById('wp-canvas');
+    const W = desk.offsetWidth  || window.innerWidth;
+    const H = desk.offsetHeight || (window.innerHeight - 52);
+    cv.width = W; cv.height = H;
+    cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    LW.stop();
+    if (LW[ST.wpLive]) LW[ST.wpLive](cv, cv.getContext('2d'));
+  }
+});
+
+// ════════════════════════════════════════════
+// ПОЛЬЗОВАТЕЛЬСКИЕ HTML-ПРИЛОЖЕНИЯ
+// ════════════════════════════════════════════
+const CustomApps = {
+  // Список: [{id, name, icon, html}]
+  list: (() => {
+    try { return JSON.parse(localStorage.getItem('kos_custom_apps') || '[]'); } catch(e) { return []; }
+  })(),
+
+  save() {
+    // Сохраняем только метаданные, html хранится отдельно чтобы не раздувать
+    const meta = this.list.map(a => ({ id: a.id, name: a.name, icon: a.icon }));
+    try { localStorage.setItem('kos_custom_apps_meta', JSON.stringify(meta)); } catch(e) {}
+    // Каждый html отдельно
+    this.list.forEach(a => {
+      try { localStorage.setItem('kos_capp_' + a.id, a.html); } catch(e) {}
+    });
+  },
+
+  loadAll() {
+    try {
+      const meta = JSON.parse(localStorage.getItem('kos_custom_apps_meta') || '[]');
+      this.list = meta.map(m => {
+        const html = localStorage.getItem('kos_capp_' + m.id) || '<p>Ошибка загрузки</p>';
+        return { ...m, html };
+      });
+    } catch(e) { this.list = []; }
+  },
+
+  add(name, icon, htmlContent) {
+    const id = 'capp_' + Date.now();
+    this.list.push({ id, name, icon, html: htmlContent });
+    this.save();
+    // Добавить в установленные приложения
+    if (!ST.installed.includes(id)) {
+      ST.installed.push(id);
+      localStorage.setItem('kos_apps', JSON.stringify(ST.installed));
+    }
+    UI.renderIcons();
+    UI.renderStartMenu();
+    notify('Приложение установлено', `✓ «${name}» добавлено на рабочий стол`);
+  },
+
+  remove(id) {
+    const app = this.list.find(a => a.id === id);
+    this.list = this.list.filter(a => a.id !== id);
+    this.save();
+    localStorage.removeItem('kos_capp_' + id);
+    ST.installed = ST.installed.filter(i => i !== id);
+    localStorage.setItem('kos_apps', JSON.stringify(ST.installed));
+    WM.close(id);
+    UI.renderIcons();
+    UI.renderStartMenu();
+    if (app) notify('Удалено', `🗑 «${app.name}» удалено`);
+  },
+
+  open(id) {
+    const app = this.list.find(a => a.id === id);
+    if (!app) { notify('Ошибка', 'Приложение не найдено'); return; }
+    // Открываем в iframe внутри окна
+    const iframeId = 'win-' + id;
+    const iframeSrc = URL.createObjectURL(new Blob([app.html], { type: 'text/html' }));
+    const html = `<iframe src="${iframeSrc}" style="width:100%;height:100%;border:none;border-radius:0 0 var(--r) var(--r);" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>`;
+    WM.create({ id: iframeId, title: app.name, icon: app.icon, w: 800, h: 560, html });
+  },
+
+  // Менеджер установки приложений
+  openManager() {
+    const renderList = () => {
+      const el = document.getElementById('capp-list');
+      if (!el) return;
+      el.innerHTML = this.list.length === 0
+        ? `<div style="text-align:center;padding:30px;color:var(--tx2);font-size:13px">Нет установленных приложений.<br>Загрузите HTML-файл ниже.</div>`
+        : this.list.map(a => `
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 13px;background:rgba(255,255,255,0.04);border:1px solid var(--bd);border-radius:9px;margin-bottom:7px;transition:border-color .15s" onmouseover="this.style.borderColor='var(--bda)'" onmouseout="this.style.borderColor='var(--bd)'">
+            <span style="font-size:26px">${a.icon}</span>
+            <div style="flex:1">
+              <div style="font-size:calc(13px * var(--zoom));font-weight:700;color:var(--tx)">${a.name}</div>
+              <div style="font-size:10px;color:var(--tx2);margin-top:2px">HTML-приложение · ID: ${a.id}</div>
+            </div>
+            <button onclick="CustomApps.open('${a.id}')" style="padding:5px 11px;background:rgba(0,229,255,0.1);border:1px solid var(--bda);border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;color:var(--a);transition:all .13s" onmouseover="this.style.background='rgba(0,229,255,0.2)'" onmouseout="this.style.background='rgba(0,229,255,0.1)'">▶ Открыть</button>
+            <button onclick="if(confirm('Удалить «${a.name}»?'))CustomApps.remove('${a.id}')" style="padding:5px 11px;background:rgba(255,96,88,0.1);border:1px solid rgba(255,96,88,0.35);border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;color:#ff6058;transition:all .13s" onmouseover="this.style.background='rgba(255,96,88,0.2)'" onmouseout="this.style.background='rgba(255,96,88,0.1)'">🗑 Удалить</button>
+          </div>`).join('');
+    };
+
+    const html = `<div style="padding:16px;display:flex;flex-direction:column;gap:14px;height:100%;overflow:auto">
+      <!-- Секция установки -->
+      <div style="background:rgba(0,229,255,0.04);border:1px solid var(--bda);border-radius:12px;padding:16px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--a);margin-bottom:12px">📦 УСТАНОВИТЬ ПРИЛОЖЕНИЕ</div>
+
+        <!-- Drag & Drop зона -->
+        <div id="capp-dropzone"
+          style="border:2px dashed var(--bd);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px"
+          onclick="document.getElementById('capp-filein').click()"
+          ondragover="event.preventDefault();this.style.borderColor='var(--a)';this.style.background='rgba(0,229,255,0.07)'"
+          ondragleave="this.style.borderColor='var(--bd)';this.style.background='transparent'"
+          ondrop="cappHandleDrop(event)">
+          <div style="font-size:44px;margin-bottom:8px">📄</div>
+          <div style="font-size:calc(14px * var(--zoom));font-weight:700;color:var(--tx);margin-bottom:4px">Нажмите или перетащите HTML-файл</div>
+          <div style="font-size:calc(11px * var(--zoom));color:var(--tx2)">Поддерживаются одиночные .html файлы · Скрипты, стили и изображения (base64) внутри</div>
+        </div>
+        <input type="file" id="capp-filein" accept=".html,.htm" multiple style="display:none" onchange="cappLoadFiles(this.files)">
+
+        <!-- Ручной ввод -->
+        <details style="margin-top:4px">
+          <summary style="cursor:pointer;font-size:calc(12px * var(--zoom));color:var(--tx2);padding:6px 0;list-style:none;display:flex;align-items:center;gap:6px">
+            <span>✏</span><span>Или вставьте HTML-код вручную</span>
+          </summary>
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:8px">
+              <input id="capp-name" placeholder="Название приложения" style="flex:1;padding:7px 11px;background:rgba(255,255,255,0.07);border:1px solid var(--bd);border-radius:7px;color:var(--tx);font-size:calc(12px * var(--zoom));outline:none" onfocus="this.style.borderColor='var(--bda)'" onblur="this.style.borderColor='var(--bd)'">
+              <input id="capp-icon" placeholder="Иконка (эмодзи)" style="width:110px;padding:7px 11px;background:rgba(255,255,255,0.07);border:1px solid var(--bd);border-radius:7px;color:var(--tx);font-size:calc(12px * var(--zoom));outline:none" onfocus="this.style.borderColor='var(--bda)'" onblur="this.style.borderColor='var(--bd)'">
+            </div>
+            <textarea id="capp-code" placeholder="Вставьте HTML-код сюда…" style="width:100%;height:100px;background:rgba(0,0,0,0.3);border:1px solid var(--bd);border-radius:7px;color:var(--tx);font-family:'Courier New',monospace;font-size:calc(11px * var(--zoom));padding:9px;outline:none;resize:vertical;line-height:1.5" onfocus="this.style.borderColor='var(--bda)'" onblur="this.style.borderColor='var(--bd)'"></textarea>
+            <button onclick="cappInstallManual()" style="align-self:flex-start;padding:7px 18px;background:linear-gradient(135deg,var(--a),var(--a3));border:none;border-radius:7px;cursor:pointer;font-size:calc(12px * var(--zoom));font-weight:800;color:#000;transition:transform .1s" onmousedown="this.style.transform='scale(.96)'" onmouseup="this.style.transform=''">
+              ⚡ Установить
+            </button>
+          </div>
+        </details>
+      </div>
+
+      <!-- Список установленных -->
+      <div>
+        <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--a);margin-bottom:10px">
+          🗂 УСТАНОВЛЕННЫЕ (${this.list.length})
+        </div>
+        <div id="capp-list"></div>
+      </div>
+
+      <!-- Советы -->
+      <div style="padding:12px;background:rgba(255,255,255,0.03);border:1px solid var(--bd);border-radius:8px;font-size:calc(11px * var(--zoom));color:var(--tx2);line-height:1.9">
+        💡 <strong style="color:var(--tx)">Советы:</strong><br>
+        • HTML открывается в изолированном iframe<br>
+        • Для работы JS — скрипты должны быть внутри файла<br>
+        • Изображения вставляйте как base64 или через URL<br>
+        • Файл должен быть самодостаточным (один .html)
+      </div>
+    </div>`;
+
+    window.cappHandleDrop = (e) => {
+      e.preventDefault();
+      const zone = document.getElementById('capp-dropzone');
+      if (zone) { zone.style.borderColor = 'var(--bd)'; zone.style.background = 'transparent'; }
+      cappLoadFiles(e.dataTransfer.files);
+    };
+
+    window.cappLoadFiles = (files) => {
+      Array.from(files).forEach(file => {
+        if (!file.name.match(/\.html?$/i)) { notify('Ошибка', `«${file.name}» — не HTML-файл`); return; }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const name = file.name.replace(/\.html?$/i, '').replace(/[-_]/g, ' ');
+          // Выбираем иконку по ключевым словам
+          const nameLow = name.toLowerCase();
+          let icon = '📄';
+          if (nameLow.includes('игр') || nameLow.includes('game')) icon = '🎮';
+          else if (nameLow.includes('музык') || nameLow.includes('music') || nameLow.includes('плеер')) icon = '🎵';
+          else if (nameLow.includes('калькул') || nameLow.includes('calc')) icon = '🧮';
+          else if (nameLow.includes('карт') || nameLow.includes('map')) icon = '🗺';
+          else if (nameLow.includes('погод') || nameLow.includes('weather')) icon = '🌤';
+          else if (nameLow.includes('фото') || nameLow.includes('photo') || nameLow.includes('рисо')) icon = '🖼';
+          else if (nameLow.includes('чат') || nameLow.includes('chat') || nameLow.includes('мессенд')) icon = '💬';
+          else if (nameLow.includes('код') || nameLow.includes('code') || nameLow.includes('редакт')) icon = '💻';
+          else if (nameLow.includes('таймер') || nameLow.includes('timer') || nameLow.includes('часы')) icon = '⏱';
+          else if (nameLow.includes('todo') || nameLow.includes('задач') || nameLow.includes('список')) icon = '✅';
+          CustomApps.add(name, icon, e.target.result);
+          renderList();
+        };
+        reader.readAsText(file);
+      });
+    };
+
+    window.cappInstallManual = () => {
+      const name = document.getElementById('capp-name')?.value?.trim();
+      const icon = document.getElementById('capp-icon')?.value?.trim() || '📄';
+      const code = document.getElementById('capp-code')?.value?.trim();
+      if (!name) { notify('Ошибка', 'Введите название приложения'); return; }
+      if (!code) { notify('Ошибка', 'Вставьте HTML-код'); return; }
+      CustomApps.add(name, icon, code);
+      renderList();
+      // Очистить поля
+      const n = document.getElementById('capp-name'); const ic = document.getElementById('capp-icon'); const c = document.getElementById('capp-code');
+      if (n) n.value = ''; if (ic) ic.value = ''; if (c) c.value = '';
+    };
+
+    WM.create({ id: 'app-custom-manager', title: 'Мои приложения', icon: '📦', w: 680, h: 580, html });
+    requestAnimationFrame(renderList);
+  }
+};
+
+// Перехват открытия пользовательских приложений в Apps.open
+const _origOpen = Apps.open.bind(Apps);
+Apps.open = function(id) {
+  if (id.startsWith('capp_')) { CustomApps.open(id); return; }
+  _origOpen(id);
+};
+</script>
+</body>
+</html>
