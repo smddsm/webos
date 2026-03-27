@@ -1,0 +1,35 @@
+{
+  "name": "КиберОС 3.0",
+  "short_name": "КиберОС",
+  "description": "Виртуальная операционная система в браузере",
+  "start_url": "./KiberOS_v6-4.html",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#0a0f23",
+  "theme_color": "#00e5ff",
+  "lang": "ru",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "prefer_related_applications": false
+}
